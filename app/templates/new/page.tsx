@@ -7,6 +7,10 @@ export default function NewTemplatePage() {
   async function handleCreate(formData: FormData) {
     'use server'
     const { userId } = await auth()
+    if (!userId) {
+      throw new Error("ログインが必要です")
+    }
+    
     const name = formData.get('name') as string
     const defaultText = formData.get('defaultText') as string
 
