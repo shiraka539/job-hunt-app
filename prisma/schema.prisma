@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 企業情報
+model Company {
+  id        String   @id @default(uuid())
+  name      String   // 企業名
+  status    String   // 選考ステータス（例：未エントリー、ES提出済、1次面接待ち など）
+  myPageUrl String?  // マイページのURL（?は空欄OKの意味）
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // リレーション：1つの企業は複数の選考フェーズ（Section）を持つ
+  sections  Section[]
+}
+
+// 選考フェーズ（適性検査、ES、1次面接など）
+model Section {
+  id        String   @id @default(uuid())
+  companyId String
+  type      String   // 種類（ES、適性検査、1次面接など）
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  // リレーション：1つのフェーズは複数の設問（Question）を持つ
+  questions Question[]
+}
+
+// 設問と回答（エディター部分）
+model Question {
+  id        String   @id @default(uuid())
+  sectionId String
+  title     String   // 設問（見出し）
+  content   String?  // 回答内容
+  maxLength Int?     // 文字数上限（空欄なら制限なし）
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  section   Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+}
+
+// ワンクリック追加用のひな形（テンプレート）
+model Template {
+  id          String   @id @default(uuid())
+  name        String   // テンプレート名（ガクチカ、自己PRなど）
+  defaultText String   // デフォルトの質問文
+  createdAt   DateTime @default(now())
+}
