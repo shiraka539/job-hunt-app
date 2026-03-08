@@ -1,15 +1,17 @@
 import { redirect } from 'next/navigation'
 import { prisma } from '../../../lib/prisma'
 import Link from 'next/link'
+import { auth } from '@clerk/nextjs/server'
 
 export default function NewTemplatePage() {
   async function handleCreate(formData: FormData) {
     'use server'
+    const { userId } = await auth()
     const name = formData.get('name') as string
     const defaultText = formData.get('defaultText') as string
 
     await prisma.template.create({
-      data: { name, defaultText },
+      data: { name, defaultText, userId },
     })
     redirect('/templates')
   }

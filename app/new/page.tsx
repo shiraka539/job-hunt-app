@@ -1,26 +1,32 @@
 import { redirect } from 'next/navigation'
 import { prisma } from '../../lib/prisma'
-
+import { auth } from '@clerk/nextjs/server'
 
 export default function NewCompanyPage() {
   // サーバーアクション：フォーム送信時に裏側で動く処理
   async function createCompany(formData: FormData) {
-    'use server' // ← これを書くだけでサーバー側の処理になる魔法の言葉
+    'use server'
+
+    // 🌟 2. ログインしているユーザーのIDを取得する！
+    const { userId } = await auth()
+    if (!userId) {
+      throw new Error("ログインが必要です")
+    }
 
     const name = formData.get('name') as string
     const status = formData.get('status') as string
     const myPageUrl = formData.get('myPageUrl') as string
 
-    // データベース（SQLite）に新しい企業データを保存
+    // 🌟 3. データベースに保存するデータに `userId` を追加！
     await prisma.company.create({
       data: {
         name,
         status,
-        myPageUrl: myPageUrl || null, // 空欄ならnullを入れる
-      },
+        myPageUrl,
+        userId, // ← ここが欠けていたのがエラーの原因だぜ！
+      }
     })
 
-    // 保存が終わったらトップページ（ダッシュボード）に自動で戻る
     redirect('/')
   }
 

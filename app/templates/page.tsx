@@ -1,9 +1,18 @@
+import { auth } from '@clerk/nextjs/server' // 🌟 これを追加
 import { prisma } from '../../lib/prisma'
 import Link from 'next/link'
 import TemplateItem from '../../components/TemplateItem'
 
 export default async function TemplatesPage() {
+  const { userId } = await auth() // 🌟 ログインユーザーのIDを取得
+
+  if (!userId) {
+    return <div>ログインしてください</div>
+  }
+
+  // 🌟 自分のテンプレートだけを取得するように where を追加！
   const templates = await prisma.template.findMany({
+    where: { userId: userId }, 
     orderBy: { createdAt: 'desc' }
   })
 

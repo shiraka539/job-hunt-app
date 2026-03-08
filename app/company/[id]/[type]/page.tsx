@@ -2,6 +2,7 @@ import { prisma } from '../../../../lib/prisma'
 import Link from 'next/link'
 import EditorClient from '../../../../components/EditorClient'
 import TestSelectionClient from '../../../../components/TestSelectionClient'
+import { auth } from '@clerk/nextjs/server' // 🌟 1. authを追加
 
 type Props = {
   params: Promise<{ id: string; type: string }>
@@ -9,9 +10,15 @@ type Props = {
 
 export default async function CompanyTypePage({ params }: Props) {
   const { id, type } = await params
+  const { userId } = await auth() // 🌟 2. ユーザーIDを取得
 
-  const company = await prisma.company.findUnique({ where: { id: id } })
-  if (!company) return <div>企業が見つかりません</div>
+  if (!userId) return <div>ログインしてください</div>
+
+  // 🌟 3. findUnique -> findFirst に変更し、自分のデータかチェック！
+  const company = await prisma.company.findFirst({ 
+    where: { id: id, userId: userId } 
+  })
+  if (!company) return <div>企業が見つからないか、アクセス権限がありません</div>
 
   let section = await prisma.section.findFirst({
     where: { companyId: id, type: type },
@@ -35,8 +42,9 @@ export default async function CompanyTypePage({ params }: Props) {
     }
   }
 
-  // ★ 登録されているテンプレートをすべて取得
+  // 🌟 4. テンプレートも「自分のものだけ」を取得するように where を追加！
   const templates = await prisma.template.findMany({
+    where: { userId: userId },
     orderBy: { createdAt: 'desc' }
   })
 
@@ -59,7 +67,6 @@ export default async function CompanyTypePage({ params }: Props) {
           </h1>
         </div>
 
-        {/* typeが'test'ならチェックボックス画面、それ以外ならいつものエディター画面にtemplatesも渡す */}
         {type === 'test' && testQuestion ? (
           <TestSelectionClient questionId={testQuestion.id} initialContent={testQuestion.content} />
         ) : (

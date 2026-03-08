@@ -10,6 +10,7 @@ datasource db {
 // 企業情報
 model Company {
   id        String   @id @default(uuid())
+  userId    String
   name      String   // 企業名
   status    String   // 選考ステータス（例：未エントリー、ES提出済、1次面接待ち など）
   myPageUrl String?  // マイページのURL（?は空欄OKの意味）
@@ -49,6 +50,7 @@ model Question {
 // ワンクリック追加用のひな形（テンプレート）
 model Template {
   id          String   @id @default(uuid())
+  userId      String
   name        String   // テンプレート名（ガクチカ、自己PRなど）
   defaultText String   // デフォルトの質問文
   createdAt   DateTime @default(now())
