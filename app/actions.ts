@@ -16,7 +16,7 @@ async function getValidatedUserId() {
 export async function addCompany(name: string) {
   const userId = await getValidatedUserId()
   await prisma.company.create({
-    data: { name, userId }
+    data: { name, userId, status: "未エントリー" }
   })
   revalidatePath('/')
 }
