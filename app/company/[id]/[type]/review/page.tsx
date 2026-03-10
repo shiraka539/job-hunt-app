@@ -1,9 +1,66 @@
-export default function ReviewPage() {
+import { prisma } from '../../../../../lib/prisma'
+import Link from 'next/link'
+import { auth } from '@clerk/nextjs/server'
+import ReviewEditorClient from '../../../../../components/ReviewEditorClient'
+
+type Props = {
+  params: Promise<{ id: string; type: string }>
+}
+
+export default async function ReviewCompanyTypePage({ params }: Props) {
+  const { id, type } = await params
+  const { userId } = await auth()
+
+  if (!userId) return <div>ログインしてください</div>
+
+  const company = await prisma.company.findFirst({
+    where: { id: id, userId: userId }
+  })
+  if (!company) return <div>権限がありません</div>
+
+  const section = await prisma.section.findFirst({
+    where: { companyId: id, type: type },
+    include: { questions: { orderBy: { createdAt: 'asc' } } }
+  })
+
+  // 設問が1つもない場合は、編集モードへ誘導する
+  if (!section || section.questions.length === 0) {
+    return (
+      <main className="min-h-screen bg-gray-50 p-8">
+        <div className="max-w-4xl mx-auto text-center py-20 bg-white rounded-xl shadow-sm border border-gray-200">
+          <p className="text-xl text-gray-500 mb-6">まだ設問がありません。</p>
+          <Link 
+            href={`/company/${id}/${type}/edit`}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold shadow-md hover:bg-blue-700 transition"
+          >
+            ✍️ 先に編集モードで設問を追加する
+          </Link>
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto text-center py-20">
-        <h1 className="text-2xl font-bold text-emerald-700 mb-4">👩‍🏫 添削モード（準備中）</h1>
-        <p className="text-gray-500">ここはあとでエレガントな添削画面にするぜ！</p>
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-6 flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+            👩‍🏫 {company.name} <span className="text-gray-400 text-lg font-normal">/ 添削・フィードバック</span>
+          </h1>
+          <Link 
+            href={`/company/${id}/${type}`} 
+            className="text-gray-600 hover:text-gray-900 transition bg-gray-100 px-4 py-2 border border-gray-200 rounded-lg shadow-sm text-sm font-medium"
+          >
+            × 保存せずに戻る
+          </Link>
+        </div>
+
+        {/* 🌟 添削用の神コンポーネントを呼び出す！ */}
+        <ReviewEditorClient 
+          questions={section.questions} 
+          companyId={id} 
+          type={type} 
+        />
       </div>
     </main>
   )

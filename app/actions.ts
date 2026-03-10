@@ -87,3 +87,10 @@ export async function deleteQuestion(questionId: string) {
     where: { id: questionId }
   })
 }
+
+export async function updateReview(questionId: string, reviewContent: string) {
+  await prisma.question.update({
+    where: { id: questionId },
+    data: { reviewContent }
+  })
+}

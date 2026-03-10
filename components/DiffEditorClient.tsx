@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { updateAnswer, addQuestion } from '../app/actions'
+import { updateAnswer, addQuestion, deleteQuestion } from '../app/actions'
 import { diffChars } from 'diff'
 
 type Question = {
@@ -45,6 +45,17 @@ export default function DiffEditorClient({ sectionId, initialQuestions, template
       alert('設問の追加に失敗しました')
     }
   }
+// 🌟 追加：設問を削除する処理
+  const handleDeleteQuestion = async (id: string) => {
+    if (!confirm('本当にこの設問を削除しますか？\n（入力した回答もすべて消えます！）')) return
+
+    try {
+      await deleteQuestion(id) // DBから削除
+      setQuestions(questions.filter(q => q.id !== id)) // 画面からも消す
+    } catch (error) {
+      alert('削除に失敗しました')
+    }
+  }
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -79,15 +90,28 @@ export default function DiffEditorClient({ sectionId, initialQuestions, template
 
           return (
             <div key={q.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              {/* 🌟 変更：ヘッダー部分にゴミ箱ボタンを追加！ */}
               <div className="flex justify-between items-end mb-4 bg-gray-50 p-3 rounded border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-800">
                   Q{index + 1}. {q.title}
                 </h2>
-                {q.maxLength && (
-                  <span className="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded font-bold">
-                    上限 {q.maxLength}文字
-                  </span>
-                )}
+                
+                <div className="flex items-center gap-3">
+                  {q.maxLength && (
+                    <span className="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded font-bold">
+                      上限 {q.maxLength}文字
+                    </span>
+                  )}
+                  {/* 🌟 差分モードじゃない時だけゴミ箱を表示 */}
+                  {!isDiffMode && (
+                    <button
+                      onClick={() => handleDeleteQuestion(q.id)}
+                      className="text-sm text-red-500 hover:text-red-700 font-bold px-2 py-1 rounded border border-transparent hover:border-red-200 hover:bg-red-50 transition"
+                    >
+                      🗑️ 削除
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* 添削内容は編集モードの時だけ上部に表示（参考用） */}
