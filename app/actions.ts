@@ -68,12 +68,13 @@ export async function deleteTemplate(templateId: string) {
 // ---------------- 設問・回答関連 ----------------
 // ※本来はここも親(Company)のuserIdをチェックするのが完璧だけど、一旦現状のままで動かすぜ。
 
-export async function addQuestion(sectionId: string, title: string, maxLength: number | null) {
-  await prisma.question.create({
+export async function addQuestion(sectionId: string, title: string, maxLength: number | null = null) {
+  const newQuestion = await prisma.question.create({
     data: { sectionId, title, maxLength }
   })
+  
+  return newQuestion // 🌟 これが抜けてたから「undefined」エラーになってたんだ！
 }
-
 export async function updateAnswer(questionId: string, content: string) {
   await prisma.question.update({
     where: { id: questionId },

@@ -36,13 +36,14 @@ model Section {
 
 // 設問と回答（エディター部分）
 model Question {
-  id        String   @id @default(uuid())
-  sectionId String
-  title     String   // 設問（見出し）
-  content   String?  // 回答内容
-  maxLength Int?     // 文字数上限（空欄なら制限なし）
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(uuid())
+  sectionId     String
+  title         String   // 設問（見出し）
+  content       String?  // 回答内容
+  reviewContent String?  // 🌟 これを追加！添削内容を入れる箱だぜ。（? があるから既存データは絶対に消えない！）
+  maxLength     Int?     // 文字数上限（空欄なら制限なし）
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   section   Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 }
