@@ -41,21 +41,21 @@ export default function ReviewEditorClient({ questions: initialQuestions, compan
   return (
     <div className="space-y-10 pb-32">
       {questions.map((q, index) => (
-        <div key={q.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 bg-gray-50 p-3 rounded border border-gray-100 flex items-center gap-3">
-            <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-md text-base">Q{index + 1}</span>
+        <div key={q.id} className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
+          <h2 className="text-xl font-bold text-zinc-100 mb-4 bg-zinc-800/50 p-3 rounded border border-zinc-800 flex items-center gap-3">
+            <span className="bg-emerald-900/50 text-emerald-400 px-3 py-1 rounded-md text-base">Q{index + 1}</span>
             {q.title}
           </h2>
 
           {/* 自分の回答（読み取り専用で表示） */}
           <div className="mb-6">
-            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">✍️ 自分の回答</h3>
+            <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-2">✍️ 自分の回答</h3>
             {q.content ? (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 text-gray-700 text-lg whitespace-pre-wrap leading-relaxed">
+              <div className="bg-black/50 border border-zinc-800 rounded-lg p-5 text-zinc-300 text-lg whitespace-pre-wrap leading-relaxed">
                 {q.content}
               </div>
             ) : (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 text-gray-400 italic">
+              <div className="bg-black/50 border border-zinc-800 rounded-lg p-5 text-zinc-500 italic">
                 まだ回答が入力されていません。
               </div>
             )}
@@ -63,13 +63,13 @@ export default function ReviewEditorClient({ questions: initialQuestions, compan
 
           {/* 添削入力エリア */}
           <div>
-            <h3 className="text-sm font-bold text-emerald-600 mb-2 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-emerald-400 mb-2 flex items-center gap-2">
               💡 添削・フィードバックを入力
             </h3>
             <textarea
               value={q.reviewContent || ''}
               onChange={(e) => handleChange(q.id, e.target.value)}
-              className="w-full h-48 border border-emerald-200 rounded-lg p-5 text-emerald-900 text-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none resize-y leading-relaxed bg-emerald-50/30"
+              className="w-full h-48 border border-emerald-800 rounded-lg p-5 text-emerald-100 text-lg focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 focus:outline-none resize-y leading-relaxed bg-emerald-900/10 placeholder:text-emerald-800"
               placeholder="先輩やAIからもらったアドバイス、修正すべきポイントなどをここにメモしておきましょう..."
             />
           </div>
@@ -77,13 +77,14 @@ export default function ReviewEditorClient({ questions: initialQuestions, compan
       ))}
 
       {/* アクションバー */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white p-5 border-t-2 border-gray-200 flex justify-center z-50 shadow-2xl">
+      <div className="fixed bottom-0 left-0 right-0 bg-zinc-900/90 backdrop-blur-xl p-5 border-t border-zinc-800 flex justify-center z-50">
         <div className="max-w-4xl w-full flex justify-end items-center">
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="px-10 py-4 min-w-[280px] rounded-xl text-xl font-extrabold transition-all flex items-center justify-center gap-3 shadow-lg hover:opacity-90 hover:scale-105"
-            style={{ backgroundColor: isSaving ? '#9ca3af' : '#059669', color: '#ffffff', borderRadius: '12px' }}
+            className={`px-10 py-4 min-w-[280px] rounded-xl text-xl font-extrabold transition-all flex items-center justify-center gap-3 border ${
+              isSaving ? 'bg-zinc-800 text-zinc-500 border-zinc-700 cursor-not-allowed' : 'bg-emerald-600/90 hover:bg-emerald-500 text-white border-emerald-500 hover:scale-105'
+            }`}
           >
             {isSaving ? '保存中...' : '💾 添削を保存して戻る'}
           </button>

@@ -26,12 +26,12 @@ export default async function ReviewCompanyTypePage({ params }: Props) {
   // 設問が1つもない場合は、編集モードへ誘導する
   if (!section || section.questions.length === 0) {
     return (
-      <main className="min-h-screen bg-gray-50 p-8">
-        <div className="max-w-4xl mx-auto text-center py-20 bg-white rounded-xl shadow-sm border border-gray-200">
-          <p className="text-xl text-gray-500 mb-6">まだ設問がありません。</p>
+      <main className="min-h-screen p-8">
+        <div className="max-w-4xl mx-auto text-center py-20 bg-zinc-900 rounded-xl shadow-sm border border-zinc-800">
+          <p className="text-xl text-zinc-500 mb-6">まだ設問がありません。</p>
           <Link 
             href={`/company/${id}/${type}/edit`}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold shadow-md hover:bg-blue-700 transition"
+            className="bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 px-6 py-3 rounded-lg font-bold shadow-md hover:bg-indigo-600/40 transition"
           >
             ✍️ 先に編集モードで設問を追加する
           </Link>
@@ -41,15 +41,15 @@ export default async function ReviewCompanyTypePage({ params }: Props) {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8">
+    <main className="min-h-screen p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-6 flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-            👩‍🏫 {company.name} <span className="text-gray-400 text-lg font-normal">/ 添削・フィードバック</span>
+        <div className="mb-6 flex items-center justify-between bg-zinc-900/50 p-4 rounded-xl shadow-sm border border-zinc-800">
+          <h1 className="text-2xl font-bold text-zinc-100 flex items-center gap-3">
+            👩‍🏫 {company.name} <span className="text-zinc-500 text-lg font-normal">/ 添削・フィードバック</span>
           </h1>
           <Link 
             href={`/company/${id}/${type}`} 
-            className="text-gray-600 hover:text-gray-900 transition bg-gray-100 px-4 py-2 border border-gray-200 rounded-lg shadow-sm text-sm font-medium"
+            className="text-zinc-400 hover:text-zinc-200 transition bg-zinc-800 px-4 py-2 border border-zinc-700 rounded-lg shadow-sm text-sm font-medium"
           >
             × 保存せずに戻る
           </Link>

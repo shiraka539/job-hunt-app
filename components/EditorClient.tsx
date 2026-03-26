@@ -68,10 +68,10 @@ export default function EditorClient({ sectionId, initialQuestions, templates }:
         const isOverLimit = q.maxLength ? currentLength > q.maxLength : false
 
         return (
-          <div key={q.id} className="bg-white p-6 rounded-lg shadow border border-gray-100 relative group transition-all">
+          <div key={q.id} className="bg-zinc-900 p-6 rounded-lg shadow border border-zinc-800 relative group transition-all">
             <div className="flex justify-between items-start mb-4">
               {/* Notion風の見出しデザイン */}
-              <h2 className="text-xl font-bold text-gray-800 border-l-4 border-blue-600 pl-3">
+              <h2 className="text-xl font-bold text-zinc-100 border-l-4 border-indigo-500 pl-3">
                 {q.title}
               </h2>
               
@@ -99,7 +99,7 @@ export default function EditorClient({ sectionId, initialQuestions, templates }:
                         e.target.value = '' // 選んだ後はプルダウンをリセット
                       }
                     }}
-                    className="text-sm border border-gray-300 rounded p-1.5 text-gray-700 bg-gray-50 hover:bg-gray-100 cursor-pointer focus:outline-none transition"
+                    className="text-sm border border-zinc-700 rounded p-1.5 text-zinc-300 bg-zinc-800 hover:bg-zinc-700 cursor-pointer focus:outline-none transition"
                   >
                     <option value="">💡 テンプレ挿入...</option>
                     {templates.map(t => (
@@ -109,14 +109,14 @@ export default function EditorClient({ sectionId, initialQuestions, templates }:
                 )}
 
                 {/* 削除ボタン */}
-                <button onClick={() => handleDelete(q.id)} className="text-sm text-red-500 opacity-0 group-hover:opacity-100 transition">
+                <button onClick={() => handleDelete(q.id)} className="text-sm text-rose-400 opacity-0 group-hover:opacity-100 transition">
                   削除
                 </button>
               </div>
             </div>
 
             <textarea
-              className="w-full h-48 p-4 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none resize-y text-gray-900"
+              className="w-full h-48 p-4 border border-zinc-700 bg-zinc-800 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-y text-zinc-100"
               placeholder="ここに回答を入力..."
               value={q.content || ''}
               onChange={(e) => handleContentChange(index, e.target.value)}
@@ -124,14 +124,14 @@ export default function EditorClient({ sectionId, initialQuestions, templates }:
 
             <div className="flex justify-between items-center mt-3">
               {/* 文字数カウンター */}
-              <div className={`text-sm font-medium ${isOverLimit ? 'text-red-600' : 'text-gray-500'}`}>
+              <div className={`text-sm font-medium ${isOverLimit ? 'text-rose-400' : 'text-zinc-500'}`}>
                 {currentLength} {q.maxLength ? `/ ${q.maxLength} 文字` : '文字'}
               </div>
               
               <button 
                 onClick={() => handleSave(q.id, q.content || '')}
                 disabled={isPending}
-                className="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50 text-sm font-medium shadow-sm"
+                className="bg-indigo-600 text-white px-5 py-2 rounded-md hover:bg-indigo-500 transition disabled:opacity-50 text-sm font-medium shadow-sm"
               >
                 {isPending ? '保存中...' : '保存する'}
               </button>
@@ -143,7 +143,7 @@ export default function EditorClient({ sectionId, initialQuestions, templates }:
       {/* 追加ボタン */}
       <button 
         onClick={handleAdd}
-        className="w-full py-4 border-2 border-dashed border-gray-300 text-gray-500 rounded-lg hover:border-blue-500 hover:text-blue-600 transition font-medium flex items-center justify-center gap-2"
+        className="w-full py-4 border-2 border-dashed border-zinc-700 text-zinc-500 rounded-lg hover:border-indigo-500 hover:text-indigo-400 transition font-medium flex items-center justify-center gap-2"
       >
         <span className="text-xl">+</span> 新しい設問を追加する
       </button>

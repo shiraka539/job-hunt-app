@@ -36,8 +36,8 @@ export default function TestSelectionClient({ questionId, initialContent }: { qu
   }
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow border border-gray-100 mt-6 transition-all">
-      <h2 className="text-xl font-bold text-gray-800 border-l-4 border-blue-600 pl-3 mb-6">
+    <div className="bg-zinc-900 p-8 rounded-lg shadow border border-zinc-800 mt-6 transition-all">
+      <h2 className="text-xl font-bold text-zinc-100 border-l-4 border-indigo-500 pl-3 mb-6">
         実施されるWebテストの形式
       </h2>
       
@@ -47,17 +47,17 @@ export default function TestSelectionClient({ questionId, initialContent }: { qu
           <div className="flex flex-wrap gap-3">
             {selectedTests.length > 0 ? (
               selectedTests.map(test => (
-                <span key={test} className="bg-blue-600 text-white px-5 py-2.5 rounded-md text-xl font-bold shadow-sm">
+                <span key={test} className="bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 px-5 py-2.5 rounded-md text-xl font-bold shadow-sm">
                   {test}
                 </span>
               ))
             ) : (
-              <span className="text-gray-400 font-medium">未設定</span>
+              <span className="text-zinc-500 font-medium">未設定</span>
             )}
           </div>
           <button 
             onClick={() => setIsEditing(true)}
-            className="text-sm text-gray-500 hover:text-blue-600 border border-gray-300 hover:border-blue-400 bg-white px-4 py-2 rounded transition mt-2 flex items-center gap-1"
+            className="text-sm text-zinc-400 hover:text-indigo-400 border border-zinc-700 hover:border-indigo-500 bg-zinc-800 px-4 py-2 rounded transition mt-2 flex items-center gap-1"
           >
             ✎ 形式を変更する
           </button>
@@ -76,8 +76,8 @@ export default function TestSelectionClient({ questionId, initialContent }: { qu
                   // 選択されたら色を反転させてガッツリ目立たせる！
                   className={`py-4 px-6 rounded-lg font-bold text-lg border-2 transition-all duration-200 ${
                     isSelected 
-                      ? 'bg-blue-600 border-blue-600 text-white shadow-md transform scale-[1.02]' 
-                      : 'bg-white border-gray-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50'
+                      ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-300 shadow-md transform scale-[1.02]' 
+                      : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-indigo-500/50 hover:bg-indigo-900/20'
                   }`}
                 >
                   {testName}
@@ -86,14 +86,14 @@ export default function TestSelectionClient({ questionId, initialContent }: { qu
             })}
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-gray-100 pt-6">
+          <div className="flex justify-end gap-3 border-t border-zinc-800 pt-6">
             {initialSelections.length > 0 && (
               <button 
                 onClick={() => {
                   setSelectedTests(initialSelections) // キャンセル時は元の状態に戻す
                   setIsEditing(false)
                 }}
-                className="px-6 py-3 min-w-[160px] rounded-lg text-gray-500 hover:bg-gray-100 transition font-bold text-base border border-transparent hover:border-gray-200 text-center"
+                className="px-6 py-3 min-w-[160px] rounded-lg text-zinc-400 hover:bg-zinc-800 transition font-bold text-base border border-transparent hover:border-zinc-700 text-center"
               >
                 キャンセル
               </button>
@@ -101,7 +101,7 @@ export default function TestSelectionClient({ questionId, initialContent }: { qu
             <button 
               onClick={handleSave}
               disabled={isPending}
-              className="bg-blue-600 text-white px-6 py-3 min-w-[160px] rounded-lg hover:bg-blue-700 transition disabled:opacity-50 font-bold shadow-md text-base text-center"
+              className="bg-indigo-600 text-white px-6 py-3 min-w-[160px] rounded-lg hover:bg-indigo-500 transition disabled:opacity-50 font-bold shadow-md text-base text-center border border-indigo-500"
             >
               {isPending ? '保存中...' : '形式を決定する'}
             </button>
