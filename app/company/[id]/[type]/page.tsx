@@ -35,34 +35,34 @@ export default async function CompanyTypeViewPage({ params }: Props) {
   const pageTitle = typeNames[type] || type
 
   return (
-    <main className="min-h-screen p-8">
+    <main className="min-h-screen p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
         
         {/* =========================================
             ヘッダー部分
            ========================================= */}
-        <div className="mb-8 flex items-center justify-between p-4 bg-zinc-900/50 rounded-xl shadow border border-zinc-800">
+        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 bg-zinc-900/50 rounded-xl shadow border border-zinc-800 gap-4">
           
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-zinc-400 hover:text-zinc-200 transition bg-zinc-800 px-4 py-2 border border-zinc-700 rounded-lg shadow-sm text-sm font-medium">
-              ← 就活ダッシュボードへ戻る
+          <div className="flex items-center gap-3">
+            <Link href="/" className="text-zinc-400 hover:text-zinc-200 transition bg-zinc-800 px-3 py-1.5 md:px-4 md:py-2 border border-zinc-700 rounded-lg shadow-sm text-[10px] md:text-sm font-medium whitespace-nowrap">
+              ← 戻る
             </Link>
-            <h1 className="text-2xl font-bold text-zinc-100">
-              {company.name} <span className="text-zinc-500 font-normal ml-2">/ {pageTitle}</span>
+            <h1 className="text-xl md:text-2xl font-bold text-zinc-100 truncate">
+              {company.name} <span className="text-zinc-500 font-normal ml-1">/ {pageTitle}</span>
             </h1>
           </div>
 
 {/* 🌟 絶対に色が消えない＆潰れないアクションボタンリンク */}
-          <div className="flex gap-4">
+          <div className="flex gap-2 md:gap-4 overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
             <Link 
               href={`/company/${id}/${type}/edit`} 
-              className="px-6 py-3 rounded-lg hover:opacity-90 transition-all shadow-md text-base font-bold flex items-center gap-2 whitespace-nowrap flex-shrink-0 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-600/40"
+              className="px-4 py-2 md:px-6 md:py-3 rounded-lg hover:opacity-90 transition-all shadow-md text-sm md:text-base font-bold flex items-center gap-1.5 md:gap-2 whitespace-nowrap flex-shrink-0 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-600/40"
             >
               ✍️ 編集モードへ
             </Link>
             <Link 
               href={`/company/${id}/${type}/review`} 
-              className="px-6 py-3 rounded-lg hover:opacity-90 transition-all shadow-md text-base font-bold flex items-center gap-2 whitespace-nowrap flex-shrink-0 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600/40"
+              className="px-4 py-2 md:px-6 md:py-3 rounded-lg hover:opacity-90 transition-all shadow-md text-sm md:text-base font-bold flex items-center gap-1.5 md:gap-2 whitespace-nowrap flex-shrink-0 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600/40"
             >
               👩‍🏫 添削モードへ
             </Link>
@@ -74,11 +74,11 @@ export default async function CompanyTypeViewPage({ params }: Props) {
         {/* =========================================
             閲覧エリア
            ========================================= */}
-        <div className="bg-zinc-900 rounded-lg shadow-lg border border-zinc-800 p-8">
+        <div className="bg-zinc-900 rounded-[2rem] shadow-none border border-zinc-800 p-4 md:p-8 mb-24 md:mb-0">
           {!section || section.questions.length === 0 ? (
-            <div className="text-center py-20 text-zinc-400 bg-zinc-800/50 rounded-lg border border-zinc-800">
-              <p className="mb-5 text-xl">まだESの内容が登録されていません。</p>
-              <p className="text-lg">右上の「✍️ 編集モードへ」から、設問を登録して書き始めましょう！</p>
+            <div className="text-center py-20 text-zinc-400 bg-zinc-800/50 rounded-2xl border border-zinc-800">
+              <p className="mb-5 text-lg md:text-xl">まだESの内容が登録されていません。</p>
+              <p className="text-base md:text-lg">右上の「✍️ 編集モードへ」から、設問を登録して書き始めましょう！</p>
             </div>
           ) : (
             <div className="space-y-12">
@@ -96,11 +96,11 @@ export default async function CompanyTypeViewPage({ params }: Props) {
                   
                   {/* Your Answer */}
                   <div className="mb-8">
-                    <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-3">Your Answer</h3>
+                    <h3 className="text-xs md:text-sm font-bold text-zinc-500 uppercase tracking-wider mb-2 md:mb-3">Your Answer</h3>
                     {q.content ? (
-                      <div className="bg-black/40 border border-zinc-800 rounded-lg p-6 shadow-inner">
-                        <p className="text-zinc-300 text-lg whitespace-pre-wrap leading-relaxed">{q.content}</p>
-                        <div className="mt-3 text-right text-sm text-zinc-500 font-bold">
+                      <div className="bg-black/50 border border-zinc-800 rounded-2xl p-5 md:p-8 shadow-inner">
+                        <p className="text-zinc-200 text-base md:text-lg whitespace-pre-wrap leading-loose tracking-wide">{q.content}</p>
+                        <div className="mt-4 text-right text-xs md:text-sm text-zinc-500 font-bold">
                           計 {q.content.length} 文字
                         </div>
                       </div>

@@ -45,18 +45,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="max-w-6xl mx-auto w-full">{children}</div>
 
           {/* 📱 スマホ用ボトムナビゲーション (md:hidden) */}
-          <nav className="md:hidden fixed bottom-0 w-full bg-zinc-950/80 backdrop-blur-xl border-t border-zinc-900 flex justify-around items-center h-[68px] z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.5)] pb-safe transition-colors">
-            <a href="/" className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-indigo-400 active:scale-95 transition-all">
-              <span className="text-2xl mb-1 drop-shadow-sm">🏠</span>
-              <span className="text-[10px] font-bold tracking-wide">ホーム</span>
+          <nav className="md:hidden fixed bottom-0 w-full bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-900 flex justify-around items-center h-[52px] z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.5)] pb-safe transition-colors">
+            <a href="/" className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-indigo-400 active:scale-95 transition-all pt-1">
+              <span className="text-xl mb-0.5 drop-shadow-sm leading-none">🏠</span>
+              <span className="text-[9px] font-bold tracking-wide">ホーム</span>
             </a>
-            <a href="/new" className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-indigo-400 active:scale-95 transition-all">
-              <span className="text-2xl mb-1 drop-shadow-sm">➕</span>
-              <span className="text-[10px] font-bold tracking-wide">新規登録</span>
+            <a href="/new" className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-indigo-400 active:scale-95 transition-all pt-1">
+              <span className="text-xl mb-0.5 drop-shadow-sm leading-none">➕</span>
+              <span className="text-[9px] font-bold tracking-wide">新規登録</span>
             </a>
-            <a href="/templates" className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-indigo-400 active:scale-95 transition-all">
-              <span className="text-2xl mb-1 drop-shadow-sm">💡</span>
-              <span className="text-[10px] font-bold tracking-wide">テンプレ</span>
+            <a href="/templates" className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-indigo-400 active:scale-95 transition-all pt-1">
+              <span className="text-xl mb-0.5 drop-shadow-sm leading-none">💡</span>
+              <span className="text-[9px] font-bold tracking-wide">テンプレ</span>
             </a>
           </nav>
 
