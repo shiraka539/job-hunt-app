@@ -49,13 +49,15 @@ export default async function EditCompanyTypePage({ params }: Props) {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8">
+    <main className="p-4 md:p-8 pt-6 md:pt-10 min-h-[calc(100vh-68px)]">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-            ✍️ {company.name} <span className="text-gray-400 text-lg font-normal">/ ES編集モード</span>
+        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-zinc-100 flex items-center gap-3 tracking-tight">
+            <span className="text-3xl">✍️</span> 
+            {company.name} 
+            <span className="text-zinc-500 text-lg md:text-xl font-medium tracking-normal ml-2">/ ES編集モード</span>
           </h1>
-          <Link href={`/company/${id}/${type}`} className="text-gray-500 hover:text-gray-800 transition bg-white px-4 py-2 border border-gray-200 rounded-md shadow-sm text-sm font-medium">
+          <Link href={`/company/${id}/${type}`} className="inline-flex max-w-fit items-center text-zinc-300 hover:text-indigo-400 transition-all bg-zinc-900/50 px-5 py-3 border border-zinc-800 rounded-xl shadow-sm hover:shadow-md active:scale-95 text-sm font-bold">
             × 編集をやめて戻る
           </Link>
         </div>

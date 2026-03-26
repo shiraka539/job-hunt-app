@@ -75,8 +75,9 @@ export default function DiffEditorClient({ sectionId, initialQuestions, template
     <div className="space-y-8 pb-32">
       {/* 設問一覧 */}
       {questions.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-lg border border-gray-200 shadow-sm">
-          <p className="text-gray-500 mb-6 text-lg">まだ設問がありません。下のボタンから追加してください。</p>
+        <div className="flex flex-col items-center justify-center py-20 text-center px-4 bg-zinc-900 rounded-[2rem] border border-zinc-800 shadow-sm transition-all">
+          <span className="text-6xl mb-4 opacity-70">📝</span>
+          <p className="text-zinc-400 font-black tracking-wide text-lg">まだESの内容が登録されていません。<br/>下のボタンから新しい設問を追加してください。</p>
         </div>
       ) : (
         questions.map((q, index) => {
@@ -89,16 +90,16 @@ export default function DiffEditorClient({ sectionId, initialQuestions, template
           const isOverLimit = q.maxLength ? currentText.length > q.maxLength : false
 
           return (
-            <div key={q.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              {/* 🌟 変更：ヘッダー部分にゴミ箱ボタンを追加！ */}
-              <div className="flex justify-between items-end mb-4 bg-gray-50 p-3 rounded border border-gray-100">
-                <h2 className="text-xl font-bold text-gray-800">
-                  Q{index + 1}. {q.title}
+            <div key={q.id} className="bg-zinc-900/50 rounded-[2rem] shadow-none border border-zinc-800 p-6 md:p-8 transition-all">
+              {/* ヘッダー部分 */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-zinc-900 p-4 rounded-2xl border border-zinc-800/80">
+                <h2 className="text-xl md:text-2xl font-extrabold text-zinc-100 tracking-tight">
+                  <span className="text-indigo-400 mr-2">Q{index + 1}.</span> {q.title}
                 </h2>
                 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 self-end md:self-auto">
                   {q.maxLength && (
-                    <span className="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded font-bold">
+                    <span className="text-xs md:text-sm bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg font-bold">
                       上限 {q.maxLength}文字
                     </span>
                   )}
@@ -106,7 +107,7 @@ export default function DiffEditorClient({ sectionId, initialQuestions, template
                   {!isDiffMode && (
                     <button
                       onClick={() => handleDeleteQuestion(q.id)}
-                      className="text-sm text-red-500 hover:text-red-700 font-bold px-2 py-1 rounded border border-transparent hover:border-red-200 hover:bg-red-50 transition"
+                      className="text-sm text-rose-400 hover:text-rose-300 font-bold px-3 py-1.5 rounded-lg border border-transparent hover:border-rose-900/50 hover:bg-rose-900/20 active:scale-95 transition-all"
                     >
                       🗑️ 削除
                     </button>
@@ -131,21 +132,21 @@ export default function DiffEditorClient({ sectionId, initialQuestions, template
                 <div className="space-y-6">
                   
                   {/* 🔴 【編集前 (Original)】：消した文字を赤い蛍光マーカーに！ */}
-                  <div className="bg-white border-2 border-red-100 rounded-lg p-6 shadow-inner">
-                    <h3 className="text-sm font-bold text-red-700 mb-3 flex items-center gap-2">
-                      <span className="bg-red-100 p-1 rounded">🔴</span> 編集前 (Original)
+                  <div className="bg-zinc-800/50 border-2 border-rose-900/50 rounded-[2rem] p-6 md:p-8 shadow-inner transition-colors">
+                    <h3 className="text-sm font-bold text-rose-400 mb-4 flex items-center gap-2">
+                      <span className="bg-rose-900/50 p-1.5 rounded-lg">🔴</span> 編集前 (Original)
                     </h3>
-                    <p className="text-lg text-gray-800 whitespace-pre-wrap leading-relaxed">
+                    <p className="text-lg text-zinc-200 whitespace-pre-wrap leading-relaxed">
                       {originalText === currentText ? (
-                        <span className="text-gray-400">変更はありません</span>
+                        <span className="text-zinc-500">変更はありません</span>
                       ) : (
                         changes.map((part, i) => {
                           // 🌟 消された文字だけを赤い蛍光マーカーに！
                           if (part.removed) {
-                            return <span key={i} className="bg-red-200 text-red-900 px-1 rounded mx-0.5">{part.value}</span>
+                            return <span key={i} className="bg-rose-900/70 text-rose-100 px-1 rounded mx-0.5">{part.value}</span>
                           } else if (!part.added) {
                             // 追加された文字は表示しない（編集前の元の文章だから）
-                            return <span key={i} className="text-gray-800">{part.value}</span>
+                            return <span key={i}>{part.value}</span>
                           }
                           return null; // 追加された文字はnullでスキップ
                         })
@@ -154,21 +155,21 @@ export default function DiffEditorClient({ sectionId, initialQuestions, template
                   </div>
 
                   {/* 🟢 【編集後 (Edited)】：足した文字を緑の蛍光マーカーに！ */}
-                  <div className="bg-white border-2 border-green-100 rounded-lg p-6 shadow-inner">
-                    <h3 className="text-sm font-bold text-green-700 mb-3 flex items-center gap-2">
-                      <span className="bg-green-100 p-1 rounded">🟢</span> 編集後 (Edited)
+                  <div className="bg-zinc-800/50 border-2 border-emerald-900/50 rounded-[2rem] p-6 md:p-8 shadow-inner transition-colors">
+                    <h3 className="text-sm font-bold text-emerald-400 mb-4 flex items-center gap-2">
+                      <span className="bg-emerald-900/50 p-1.5 rounded-lg">🟢</span> 編集後 (Edited)
                     </h3>
-                    <p className="text-lg text-gray-800 whitespace-pre-wrap leading-relaxed">
+                    <p className="text-lg text-zinc-200 whitespace-pre-wrap leading-relaxed">
                       {originalText === currentText ? (
-                        <span className="text-gray-400">変更はありません</span>
+                        <span className="text-zinc-500">変更はありません</span>
                       ) : (
                         changes.map((part, i) => {
                           // 🌟 追加された文字だけを緑の蛍光マーカーに！
                           if (part.added) {
-                            return <span key={i} className="bg-green-200 text-green-900 px-1 rounded font-medium mx-0.5">{part.value}</span>
+                            return <span key={i} className="bg-emerald-900/70 text-emerald-100 px-1 rounded font-medium mx-0.5">{part.value}</span>
                           } else if (!part.removed) {
                             // 消された文字は表示しない（編集後の今の文章だから）
-                            return <span key={i} className="text-gray-800">{part.value}</span>
+                            return <span key={i}>{part.value}</span>
                           }
                           return null; // 消された文字はnullでスキップ
                         })
@@ -178,16 +179,16 @@ export default function DiffEditorClient({ sectionId, initialQuestions, template
                 </div>
               ) : (
                 // ✍️ 【編集モード】
-                <div className="relative">
+                <div className="relative mt-2">
                   <textarea
                     value={currentText}
                     onChange={(e) => handleChange(q.id, e.target.value)}
-                    className={`w-full h-64 border rounded-md p-5 pb-12 text-gray-900 text-lg focus:ring-2 focus:outline-none resize-y leading-relaxed ${
-                      isOverLimit ? 'border-red-400 focus:ring-red-500 bg-red-50/20' : 'border-gray-300 focus:ring-blue-500'
+                    className={`w-full h-80 border rounded-2xl p-5 md:p-6 pb-14 text-zinc-100 bg-zinc-800 text-lg focus:ring-4 focus:outline-none resize-y leading-relaxed transition-all shadow-inner ${
+                      isOverLimit ? 'border-rose-500 focus:ring-rose-900/30 bg-rose-900/10' : 'border-zinc-700 focus:ring-indigo-900/30 focus:border-indigo-500'
                     }`}
                     placeholder="回答を入力してください..."
                   />
-                  <div className={`absolute bottom-4 right-5 text-base font-bold ${isOverLimit ? 'text-red-500' : 'text-gray-400'}`}>
+                  <div className={`absolute bottom-5 right-6 text-sm font-black tracking-wide ${isOverLimit ? 'text-rose-400' : 'text-zinc-500'}`}>
                     {currentText.length} {q.maxLength ? `/ ${q.maxLength} 文字` : '文字'}
                   </div>
                 </div>
@@ -199,41 +200,40 @@ export default function DiffEditorClient({ sectionId, initialQuestions, template
 
       {/* 設問追加ボタン */}
       {!isDiffMode && (
-        <div className="flex justify-center py-4">
+        <div className="flex justify-center py-8">
           <button
             onClick={handleAddQuestion}
-            className="text-blue-700 font-bold bg-blue-50 w-full py-5 text-lg rounded-xl border-2 border-dashed border-blue-300 hover:bg-blue-100 hover:border-blue-400 transition-all shadow-sm flex items-center justify-center gap-2"
+            className="text-indigo-400 font-extrabold bg-zinc-900/50 w-full py-6 md:py-8 text-lg rounded-[2rem] border-2 border-dashed border-zinc-700 hover:bg-zinc-800 hover:border-zinc-600 active:scale-[0.99] transition-all shadow-sm flex items-center justify-center gap-2"
           >
             ＋ 新しい設問を追加する
           </button>
         </div>
       )}
 
-{/* 🌟 強化されたド派手なアクションバー（ゆとりを持たせたエレガント版） */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white p-5 border-t-2 border-gray-200 flex justify-center z-50 shadow-2xl">
-        <div className="max-w-4xl w-full flex justify-between items-center gap-6">
+      {/* 🌟 ダークモード・Bento Grid対応アクションバー */}
+      <div className="fixed bottom-0 md:bottom-6 left-0 right-0 bg-transparent flex justify-center z-50 pb-safe md:px-6 pointer-events-none"> 
+        <div className="max-w-4xl w-full flex justify-between items-center gap-4 bg-zinc-900/90 md:bg-zinc-900/90 backdrop-blur-xl p-4 md:rounded-3xl border-t md:border border-zinc-800 pointer-events-auto">
           
           {isDiffMode ? (
             // 🔍 差分モード中
             <>
               <button
                 onClick={() => setIsDiffMode(false)}
-                className="px-5 py-3 text-base font-bold transition-all flex items-center gap-2" // 🌟 少しだけ小さくした
-                style={{ backgroundColor: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', borderRadius: '12px' }}
+                className="px-5 py-3 md:py-4 text-sm md:text-base font-bold transition-all flex items-center gap-2 bg-zinc-800 text-zinc-300 border border-zinc-700 rounded-2xl hover:bg-zinc-700 active:scale-95"
               >
-                ← ✍️ 編集に戻る
+                ← ✍️ 戻る
               </button>
               
-              <div className="flex-1 text-center text-base font-bold p-3 hidden md:block mx-4" style={{ backgroundColor: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0', borderRadius: '12px' }}>
+              <div className="flex-1 text-center text-sm font-bold px-4 hidden md:block text-emerald-400">
                 差分を確認して、問題なければ確定してください。
               </div>
 
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                // 🌟 text-xl -> text-lg に変更。min-w も少し控えめに。
-                className="px-8 py-3.5 min-w-[240px] text-lg font-extrabold transition-all flex items-center justify-center gap-2 shadow-lg hover:opacity-90 hover:scale-105"
-                style={{ backgroundColor: isSaving ? '#9ca3af' : '#16a34a', color: '#ffffff', borderRadius: '12px' }}
+                className={`px-6 py-3 md:py-4 min-w-[200px] text-base md:text-lg font-extrabold transition-all flex items-center justify-center gap-2 rounded-2xl shadow-none hover:shadow-[0_4px_20px_rgba(16,185,129,0.2)] active:scale-95 ${
+                  isSaving ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700' : 'bg-emerald-600/90 hover:bg-emerald-500 text-white border border-emerald-500'
+                }`}
               >
                 {isSaving ? '保存中...' : '✅ 確定して保存'}
               </button>
@@ -241,21 +241,18 @@ export default function DiffEditorClient({ sectionId, initialQuestions, template
           ) : (
             // ✍️ 編集モード中
             <>
-              <p className="text-base font-bold p-3 hidden md:block flex-1 text-center mr-8" style={{ backgroundColor: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+              <p className="text-sm font-bold px-4 hidden md:block flex-1 text-center text-zinc-400">
                 推敲が終わったら、変更差分を確認しましょう。
               </p>
               
               <button
                 onClick={() => setIsDiffMode(true)}
-                // 🌟 text-xl -> text-lg に変更。min-w を 260px にしてゆとりを作った！
-                className="px-8 py-3.5 min-w-[260px] flex-shrink-0 whitespace-nowrap ml-auto text-lg font-bold transition-all flex items-center justify-center gap-2 shadow-lg hover:opacity-90 hover:scale-105"
-                style={{ backgroundColor: '#2563eb', color: '#ffffff', borderRadius: '12px' }}
+                className="w-full md:w-auto px-8 py-4 min-h-[56px] text-lg md:text-xl font-extrabold transition-all flex items-center justify-center gap-3 rounded-2xl active:scale-95 bg-indigo-600 hover:bg-indigo-500 text-white mx-auto md:ml-auto md:mr-0 shadow-none border border-indigo-500 hover:shadow-[0_8px_30px_rgb(79,70,229,0.2)]"
               >
-                💾 保存内容を確認
+                <span>💾</span> 確認モードへ進む
               </button>
             </>
           )}
-
         </div>
       </div>
     </div>
