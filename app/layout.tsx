@@ -8,7 +8,14 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider 
+      appearance={{
+        elements: {
+          socialButtonsBlockButton: "hidden", // 🌟 Google等のボタンを隠す
+          dividerRow: "hidden",              // 🌟 「or」の線を隠す
+        }
+      }}
+    >
       <html lang="ja">
         <body className="bg-gray-50 text-gray-900 min-h-screen">
           <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">

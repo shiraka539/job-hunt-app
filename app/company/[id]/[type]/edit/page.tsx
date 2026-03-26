@@ -13,15 +13,24 @@ export default async function EditCompanyTypePage({ params }: Props) {
 
   if (!userId) return <div>ログインしてください</div>
 
-  const company = await prisma.company.findFirst({
-    where: { id: id, userId: userId }
-  })
+  // 🌟 パフォーマンス改善：直列処理(ウォーターフォール)をなくし、3つの無関係なクエリを同時に並列取得します。
+  const [company, initialSection, templates] = await Promise.all([
+    prisma.company.findFirst({
+      where: { id: id, userId: userId }
+    }),
+    prisma.section.findFirst({
+      where: { companyId: id, type: type },
+      include: { questions: { orderBy: { createdAt: 'asc' } } }
+    }),
+    prisma.template.findMany({
+      where: { userId: userId },
+      orderBy: { createdAt: 'desc' }
+    })
+  ])
+
   if (!company) return <div>権限がありません</div>
 
-  let section = await prisma.section.findFirst({
-    where: { companyId: id, type: type },
-    include: { questions: { orderBy: { createdAt: 'asc' } } }
-  })
+  let section = initialSection
 
   // セクションがなければ新規作成
   if (!section) {
@@ -38,12 +47,6 @@ export default async function EditCompanyTypePage({ params }: Props) {
     })
     section.questions = [testQuestion]
   }
-
-  // テンプレートも取得しておく（エディタ内で呼び出せるように）
-  const templates = await prisma.template.findMany({
-    where: { userId: userId },
-    orderBy: { createdAt: 'desc' }
-  })
 
   return (
     <main className="min-h-screen bg-gray-50 p-8">

@@ -12,19 +12,20 @@ export default async function CompanyTypeViewPage({ params }: Props) {
 
   if (!userId) return <div>ログインしてください</div>
 
-  // 1. 自分のデータか確認
-  const company = await prisma.company.findFirst({
-    where: { id: id, userId: userId }
-  })
-  if (!company) return <div>企業が見つからないか、アクセス権限がありません</div>
+  // 1 & 2. 自分の会社のデータとセクション（設問含む）を同時に並列取得！これで直列の「通信待ち」がなくなります。
+  const [company, section] = await Promise.all([
+    prisma.company.findFirst({
+      where: { id: id, userId: userId }
+    }),
+    prisma.section.findFirst({
+      where: { companyId: id, type: type },
+      include: { 
+        questions: { orderBy: { createdAt: 'asc' } } // 作成順に並べる
+      }
+    })
+  ])
 
-  // 2. セクションと設問（Question）を取得
-  const section = await prisma.section.findFirst({
-    where: { companyId: id, type: type },
-    include: { 
-      questions: { orderBy: { createdAt: 'asc' } } // 作成順に並べる
-    }
-  })
+  if (!company) return <div>企業が見つからないか、アクセス権限がありません</div>
 
   const typeNames: Record<string, string> = {
     test: '適性検査',
