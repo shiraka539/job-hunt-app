@@ -3,27 +3,24 @@ import { prisma } from '../../lib/prisma'
 import { auth } from '@clerk/nextjs/server'
 
 export default function NewCompanyPage() {
-  // サーバーアクション：フォーム送信時に裏側で動く処理
   async function createCompany(formData: FormData) {
     'use server'
 
-    // 🌟 2. ログインしているユーザーのIDを取得する！
     const { userId } = await auth()
-    if (!userId) {
-      throw new Error("ログインが必要です")
-    }
+    if (!userId) throw new Error("ログインが必要です")
 
     const name = formData.get('name') as string
     const status = formData.get('status') as string
     const myPageUrl = formData.get('myPageUrl') as string
+    const deadline = formData.get('deadline') as string
 
-    // 🌟 3. データベースに保存するデータに `userId` を追加！
     await prisma.company.create({
       data: {
         name,
         status,
-        myPageUrl,
-        userId, // ← ここが欠けていたのがエラーの原因だぜ！
+        myPageUrl: myPageUrl || null,
+        deadline: deadline ? new Date(deadline) : null,
+        userId,
       }
     })
 
@@ -45,12 +42,12 @@ export default function NewCompanyPage() {
         <form action={createCompany} className="space-y-6">
           <div>
             <label className="block text-sm font-bold text-zinc-300 mb-2">企業名 <span className="text-rose-500">*</span></label>
-            <input 
-              type="text" 
-              name="name" 
-              required 
+            <input
+              type="text"
+              name="name"
+              required
               className="w-full border border-zinc-700 bg-zinc-800/50 rounded-xl p-4 min-h-[52px] text-zinc-100 focus:ring-4 focus:ring-indigo-900/50 focus:border-indigo-500 outline-none transition-all placeholder:text-zinc-600"
-              placeholder="例：株式会社〇〇" 
+              placeholder="例：株式会社〇〇"
             />
           </div>
 
@@ -68,12 +65,23 @@ export default function NewCompanyPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-zinc-300 mb-2">マイページURL (任意)</label>
-            <input 
-              type="url" 
-              name="myPageUrl" 
-              className="w-full border border-zinc-700 bg-zinc-800/50 rounded-xl p-4 min-h-[52px] text-zinc-100 focus:ring-4 focus:ring-indigo-900/50 focus:border-indigo-500 outline-none transition-all placeholder:text-zinc-600" 
-              placeholder="https://..." 
+            <label className="block text-sm font-bold text-zinc-300 mb-2">
+              締め切り日 <span className="text-zinc-500 font-normal text-xs">(任意)</span>
+            </label>
+            <input
+              type="date"
+              name="deadline"
+              className="w-full border border-zinc-700 bg-zinc-800/50 rounded-xl p-4 min-h-[52px] text-zinc-100 focus:ring-4 focus:ring-indigo-900/50 focus:border-indigo-500 outline-none transition-all [color-scheme:dark]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-zinc-300 mb-2">マイページURL <span className="text-zinc-500 font-normal text-xs">(任意)</span></label>
+            <input
+              type="url"
+              name="myPageUrl"
+              className="w-full border border-zinc-700 bg-zinc-800/50 rounded-xl p-4 min-h-[52px] text-zinc-100 focus:ring-4 focus:ring-indigo-900/50 focus:border-indigo-500 outline-none transition-all placeholder:text-zinc-600"
+              placeholder="https://..."
             />
           </div>
 

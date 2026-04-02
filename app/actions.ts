@@ -13,19 +13,19 @@ async function getValidatedUserId() {
 
 // ---------------- 企業関連 ----------------
 
-export async function addCompany(name: string) {
+export async function addCompany(name: string, deadline: string | null = null) {
   const userId = await getValidatedUserId()
   await prisma.company.create({
-    data: { name, userId, status: "未エントリー" }
+    data: { name, userId, status: "未エントリー", deadline: deadline ? new Date(deadline) : null }
   })
   revalidatePath('/')
 }
 
-export async function updateCompany(companyId: string, name: string, status: string, myPageUrl: string | null) {
+export async function updateCompany(companyId: string, name: string, status: string, myPageUrl: string | null, deadline: string | null = null) {
   const userId = await getValidatedUserId()
   await prisma.company.update({
-    where: { id: companyId, userId }, // 🌟 自分のデータだけ更新可能に！
-    data: { name, status, myPageUrl }
+    where: { id: companyId, userId },
+    data: { name, status, myPageUrl, deadline: deadline ? new Date(deadline) : null }
   })
   revalidatePath('/')
 }

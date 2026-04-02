@@ -14,6 +14,7 @@ model Company {
   name      String   // 企業名
   status    String   // 選考ステータス（例：未エントリー、ES提出済、1次面接待ち など）
   myPageUrl String?  // マイページのURL（?は空欄OKの意味）
+  deadline  DateTime? // ES・選考の締め切り日
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
