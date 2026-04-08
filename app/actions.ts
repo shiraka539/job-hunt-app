@@ -3,6 +3,8 @@
 import { prisma } from '../lib/prisma'
 import { auth } from '@clerk/nextjs/server' // 🌟 これが抜けてた！
 import { revalidatePath } from 'next/cache' // 🌟 これも抜けてた！
+import { COMPANY_STATUS } from '../constants/status'
+import { CompanyQuestion } from '../types'
 
 // 🌟 共通：ログイン中のIDを取得
 async function getValidatedUserId() {
@@ -13,19 +15,19 @@ async function getValidatedUserId() {
 
 // ---------------- 企業関連 ----------------
 
-export async function addCompany(name: string, deadline: string | null = null) {
+export async function addCompany(name: string, deadline: string | null = null, applicationId: string | null = null) {
   const userId = await getValidatedUserId()
   await prisma.company.create({
-    data: { name, userId, status: "未エントリー", deadline: deadline ? new Date(deadline) : null }
+    data: { name, userId, status: COMPANY_STATUS.UNENTERED, deadline: deadline ? new Date(deadline) : null, applicationId }
   })
   revalidatePath('/')
 }
 
-export async function updateCompany(companyId: string, name: string, status: string, myPageUrl: string | null, deadline: string | null = null) {
+export async function updateCompany(companyId: string, name: string, status: string, myPageUrl: string | null, deadline: string | null = null, applicationId: string | null = null) {
   const userId = await getValidatedUserId()
   await prisma.company.update({
     where: { id: companyId, userId },
-    data: { name, status, myPageUrl, deadline: deadline ? new Date(deadline) : null }
+    data: { name, status, myPageUrl, deadline: deadline ? new Date(deadline) : null, applicationId }
   })
   revalidatePath('/')
 }
@@ -66,6 +68,15 @@ export async function deleteTemplate(templateId: string) {
 }
 
 // ---------------- 設問・回答関連 ----------------
+
+export async function updateCompanyQuestions(companyId: string, questions: CompanyQuestion[]) {
+  const userId = await getValidatedUserId();
+  await prisma.company.update({
+    where: { id: companyId, userId },
+    data: { questions: questions as any } // Prisma JSON型への割り当て
+  });
+  revalidatePath(`/company/${companyId}/es-json`);
+}
 // ※本来はここも親(Company)のuserIdをチェックするのが完璧だけど、一旦現状のままで動かすぜ。
 
 export async function addQuestion(sectionId: string, title: string, maxLength: number | null = null) {

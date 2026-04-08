@@ -3,36 +3,21 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { deleteCompany } from '../app/actions'
+import { CompanyViewData } from '../types'
+import { getDeadlineInfo } from '../utils/deadline'
 
-type Company = {
-  id: string
-  name: string
-  status: string
-  myPageUrl: string | null
-  deadline: string | null // Date は JSON 経由で string として届く
-}
-
-// 締め切り日の「あと○日」を計算するヘルパー
-function getDeadlineInfo(deadlineStr: string | null): { label: string; urgency: 'overdue' | 'urgent' | 'soon' | 'normal' | null } {
-  if (!deadlineStr) return { label: '', urgency: null }
-  const deadline = new Date(deadlineStr)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  deadline.setHours(0, 0, 0, 0)
-  const diffMs = deadline.getTime() - today.getTime()
-  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
-
-  const dateLabel = deadline.toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' })
-
-  if (diffDays < 0) return { label: `${dateLabel}（期限切れ）`, urgency: 'overdue' }
-  if (diffDays === 0) return { label: `${dateLabel}（今日！）`, urgency: 'urgent' }
-  if (diffDays <= 3) return { label: `${dateLabel}（あと${diffDays}日）`, urgency: 'urgent' }
-  if (diffDays <= 7) return { label: `${dateLabel}（あと${diffDays}日）`, urgency: 'soon' }
-  return { label: `${dateLabel}（あと${diffDays}日）`, urgency: 'normal' }
-}
-
-export default function CompanyItem({ company }: { company: Company }) {
+export default function CompanyItem({ company }: { company: CompanyViewData }) {
   const [isOpen, setIsOpen] = useState(false)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
+
+  const handleCopyId = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (company.applicationId) {
+      navigator.clipboard.writeText(company.applicationId)
+      setToastMessage('IDをコピーしました')
+      setTimeout(() => setToastMessage(null), 3000)
+    }
+  }
 
   const handleDelete = async () => {
     if (confirm(`「${company.name}」を削除してもよろしいですか？\n※ESや面接のメモもすべて消去されます。`)) {
@@ -67,6 +52,16 @@ export default function CompanyItem({ company }: { company: Company }) {
               {company.name}
             </h3>
             <div className="flex flex-wrap items-center gap-2 mt-1">
+              {company.applicationId && (
+                <button
+                  onClick={handleCopyId}
+                  className="text-xs font-mono font-bold text-zinc-300 bg-zinc-800/80 hover:bg-zinc-700 px-2 py-0.5 rounded-md border border-zinc-700 transition-colors flex items-center gap-1 active:scale-95"
+                  title="クリックしてコピー"
+                >
+                  <span className="opacity-50">#</span>
+                  {company.applicationId}
+                </button>
+              )}
               <span className="text-xs font-black text-indigo-300 bg-indigo-900/50 px-2 py-0.5 rounded-md border border-indigo-800/50">
                 {company.status}
               </span>
@@ -105,12 +100,19 @@ export default function CompanyItem({ company }: { company: Company }) {
           <Link href={`/company/${company.id}/test`} className="flex-1 min-w-[140px] text-center text-sm font-bold bg-zinc-900 hover:bg-indigo-900/20 hover:border-indigo-500/50 hover:text-indigo-300 border border-zinc-800 text-zinc-300 p-4 min-h-[44px] rounded-xl shadow-none transition-all">
             📝 適性検査
           </Link>
-          <Link href={`/company/${company.id}/es`} className="flex-1 min-w-[140px] text-center text-sm font-bold bg-zinc-900 hover:bg-emerald-900/20 hover:border-emerald-500/50 hover:text-emerald-300 border border-zinc-800 text-zinc-300 p-4 min-h-[44px] rounded-xl shadow-none transition-all">
+          <Link href={`/company/${company.id}/es-json`} className="flex-1 min-w-[140px] text-center text-sm font-bold bg-zinc-900 hover:bg-emerald-900/20 hover:border-emerald-500/50 hover:text-emerald-300 border border-zinc-800 text-zinc-300 p-4 min-h-[44px] rounded-xl shadow-none transition-all">
             📄 ES内容
           </Link>
           <Link href={`/company/${company.id}/interview`} className="flex-1 min-w-[140px] text-center text-sm font-bold bg-zinc-900 hover:bg-amber-900/20 hover:border-amber-500/50 hover:text-amber-300 border border-zinc-800 text-zinc-300 p-4 min-h-[44px] rounded-xl shadow-none transition-all">
             🗣️ 面接対策
           </Link>
+        </div>
+      )}
+      
+      {/* トースト通知 */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 bg-zinc-800 text-emerald-400 border border-emerald-500/50 px-5 py-3 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.5)] z-50 animate-in slide-in-from-bottom-5 duration-300 font-bold text-sm flex items-center gap-2">
+          <span>✅</span> {toastMessage}
         </div>
       )}
     </li>

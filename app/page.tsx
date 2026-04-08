@@ -1,7 +1,8 @@
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '../lib/prisma'
 import Link from 'next/link'
-import CompanyItem from '../components/CompanyItem'
+import CompanyListClient from '../components/CompanyListClient'
+import { COMPANY_STATUS } from '../constants/status'
 
 export default async function Home() {
   const { userId } = await auth()
@@ -14,8 +15,8 @@ export default async function Home() {
 
   // 統計の計算
   const total = companies.length
-  const offered = companies.filter(c => c.status === '内定').length
-  const esSubmitted = companies.filter(c => c.status === 'ES提出済').length
+  const offered = companies.filter(c => c.status === COMPANY_STATUS.OFFER).length
+  const esSubmitted = companies.filter(c => c.status === COMPANY_STATUS.ES_SUBMITTED).length
   const interviewing = companies.filter(c => c.status.includes('面接')).length
 
   // 締め切りが近い企業（7日以内、期限切れ含む）
@@ -147,28 +148,16 @@ export default async function Home() {
             Widget D: 企業一覧
             ======================= */}
         <div className="md:col-span-12 mt-4 bg-zinc-900 border border-zinc-800 rounded-[32px] shadow-sm overflow-hidden mb-8">
-          <div className="px-6 md:px-8 py-6 border-b border-zinc-800/80">
-            <h2 className="text-xl font-bold text-zinc-100">登録済み企業一覧</h2>
-          </div>
-
-          {companies.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-              <span className="text-6xl mb-4 opacity-50">📂</span>
-              <p className="text-zinc-400 font-medium">まだ登録されている企業がありません。<br/>PCから「新規企業を登録」で始めましょう！</p>
-            </div>
-          ) : (
-            <ul className="p-4 md:p-6 space-y-4 bg-black/20">
-              {companies.map((company) => (
-                <CompanyItem
-                  key={company.id}
-                  company={{
-                    ...company,
-                    deadline: company.deadline ? company.deadline.toISOString() : null,
-                  }}
-                />
-              ))}
-            </ul>
-          )}
+          <CompanyListClient 
+            initialCompanies={companies.map(c => ({
+              id: c.id,
+              name: c.name,
+              status: c.status,
+              myPageUrl: c.myPageUrl,
+              applicationId: c.applicationId,
+              deadline: c.deadline ? c.deadline.toISOString() : null,
+            }))} 
+          />
         </div>
 
       </div>

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { prisma } from '../../lib/prisma'
 import { auth } from '@clerk/nextjs/server'
+import { COMPANY_STATUS } from '../../constants/status'
 
 export default function NewCompanyPage() {
   async function createCompany(formData: FormData) {
@@ -13,6 +14,7 @@ export default function NewCompanyPage() {
     const status = formData.get('status') as string
     const myPageUrl = formData.get('myPageUrl') as string
     const deadline = formData.get('deadline') as string
+    const applicationId = formData.get('applicationId') as string
 
     await prisma.company.create({
       data: {
@@ -20,6 +22,7 @@ export default function NewCompanyPage() {
         status,
         myPageUrl: myPageUrl || null,
         deadline: deadline ? new Date(deadline) : null,
+        applicationId: applicationId || null,
         userId,
       }
     })
@@ -54,13 +57,9 @@ export default function NewCompanyPage() {
           <div>
             <label className="block text-sm font-bold text-zinc-300 mb-2">選考ステータス</label>
             <select name="status" className="w-full border border-zinc-700 bg-zinc-800/50 rounded-xl p-4 min-h-[52px] text-zinc-100 focus:ring-4 focus:ring-indigo-900/50 focus:border-indigo-500 outline-none transition-all appearance-none cursor-pointer">
-              <option value="未エントリー">未エントリー</option>
-              <option value="ES作成中">ES作成中</option>
-              <option value="ES提出済">ES提出済</option>
-              <option value="適性検査待ち">適性検査待ち</option>
-              <option value="1次面接待ち">1次面接待ち</option>
-              <option value="最終面接">最終面接</option>
-              <option value="内定">内定</option>
+              {Object.values(COMPANY_STATUS).map(status => (
+                <option key={status} value={status}>{status}</option>
+              ))}
             </select>
           </div>
 
@@ -82,6 +81,16 @@ export default function NewCompanyPage() {
               name="myPageUrl"
               className="w-full border border-zinc-700 bg-zinc-800/50 rounded-xl p-4 min-h-[52px] text-zinc-100 focus:ring-4 focus:ring-indigo-900/50 focus:border-indigo-500 outline-none transition-all placeholder:text-zinc-600"
               placeholder="https://..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-zinc-300 mb-2">企業発行ID/管理番号 <span className="text-zinc-500 font-normal text-xs">(任意)</span></label>
+            <input
+              type="text"
+              name="applicationId"
+              className="w-full border border-zinc-700 bg-zinc-800/50 rounded-xl p-4 min-h-[52px] text-zinc-100 focus:ring-4 focus:ring-indigo-900/50 focus:border-indigo-500 outline-none transition-all placeholder:text-zinc-600"
+              placeholder="例：ID-12345"
             />
           </div>
 
