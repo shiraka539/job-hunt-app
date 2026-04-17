@@ -59,3 +59,24 @@ model Template {
   defaultText String   // デフォルトの質問文
   createdAt   DateTime @default(now())
 }
+
+// 時代区分を定義するEnum
+enum Period {
+  JUNIOR_HIGH
+  HIGH_SCHOOL
+  UNIVERSITY
+}
+
+// 自分史・ルーツ管理
+model LifeHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  period    Period
+  title     String
+  content   String   @db.Text
+  insight   String?  @db.Text // 今の自分への繋がり
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, period])
+}

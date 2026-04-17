@@ -63,16 +63,26 @@ export default async function Home() {
               テンプレ管理 <span>&rarr;</span>
             </div>
           </Link>
+
+          <Link href="/history" className="bg-zinc-900/50 border border-zinc-800 rounded-[24px] p-6 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group min-h-[140px] focus:outline-none focus:ring-4 focus:ring-zinc-700 active:scale-95">
+            <div className="w-12 h-12 bg-zinc-800/80 rounded-full flex items-center justify-center text-2xl">📖</div>
+            <div className="font-bold text-lg text-zinc-100 tracking-wide group-hover:translate-x-1 transition-transform mt-3 flex items-center justify-between">
+              自分史管理 <span>&rarr;</span>
+            </div>
+          </Link>
         </div>
 
         {/* =======================
-            Widget A（モバイル）: テンプレ管理のみ
+            Widget A（モバイル）: クイックアクション
             ======================= */}
-        <div className="md:hidden col-span-1">
-          <Link href="/templates" className="bg-zinc-900/50 border border-zinc-800 rounded-[24px] p-5 flex items-center gap-4 hover:border-zinc-700 transition-all active:scale-95">
+        <div className="md:hidden col-span-1 grid grid-cols-2 gap-4">
+          <Link href="/templates" className="bg-zinc-900/50 border border-zinc-800 rounded-[24px] p-4 flex flex-col items-center gap-2 hover:border-zinc-700 transition-all active:scale-95">
             <div className="w-10 h-10 bg-zinc-800/80 rounded-full flex items-center justify-center text-xl flex-shrink-0">💡</div>
-            <div className="font-bold text-base text-zinc-100">テンプレ管理</div>
-            <span className="ml-auto text-zinc-500">→</span>
+            <div className="font-bold text-sm text-zinc-100">テンプレ管理</div>
+          </Link>
+          <Link href="/history" className="bg-zinc-900/50 border border-zinc-800 rounded-[24px] p-4 flex flex-col items-center gap-2 hover:border-zinc-700 transition-all active:scale-95">
+            <div className="w-10 h-10 bg-zinc-800/80 rounded-full flex items-center justify-center text-xl flex-shrink-0">📖</div>
+            <div className="font-bold text-sm text-zinc-100">自分史管理</div>
           </Link>
         </div>
 

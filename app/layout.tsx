@@ -46,13 +46,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           {/* 📱 スマホ用ボトムナビゲーション (md:hidden) */}
           <nav className="md:hidden fixed bottom-0 w-full bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-900 flex justify-around items-center h-[52px] z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.5)] pb-safe transition-colors">
-            <a href="/" className="flex flex-col items-center justify-center w-1/2 h-full text-zinc-500 hover:text-indigo-400 active:scale-95 transition-all pt-1">
+            <a href="/" className="flex flex-col items-center justify-center w-1/3 h-full text-zinc-500 hover:text-indigo-400 active:scale-95 transition-all pt-1">
               <span className="text-xl mb-0.5 drop-shadow-sm leading-none">🏠</span>
               <span className="text-[9px] font-bold tracking-wide">ホーム</span>
             </a>
-            <a href="/templates" className="flex flex-col items-center justify-center w-1/2 h-full text-zinc-500 hover:text-indigo-400 active:scale-95 transition-all pt-1">
+            <a href="/templates" className="flex flex-col items-center justify-center w-1/3 h-full text-zinc-500 hover:text-indigo-400 active:scale-95 transition-all pt-1">
               <span className="text-xl mb-0.5 drop-shadow-sm leading-none">💡</span>
               <span className="text-[9px] font-bold tracking-wide">テンプレ</span>
+            </a>
+            <a href="/history" className="flex flex-col items-center justify-center w-1/3 h-full text-zinc-500 hover:text-indigo-400 active:scale-95 transition-all pt-1">
+              <span className="text-xl mb-0.5 drop-shadow-sm leading-none">📖</span>
+              <span className="text-[9px] font-bold tracking-wide">自分史</span>
             </a>
           </nav>
 
