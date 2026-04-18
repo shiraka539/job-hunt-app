@@ -45,6 +45,7 @@ model Question {
   content       String?  // 回答内容
   reviewContent String?  // 🌟 これを追加！添削内容を入れる箱だぜ。（? があるから既存データは絶対に消えない！）
   maxLength     Int?     // 文字数上限（空欄なら制限なし）
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -79,4 +80,21 @@ model LifeHistory {
   updatedAt DateTime @updatedAt
 
   @@index([userId, period])
+}
+
+// 汎用エピソード・バンク（面接で使い回すマスター要約）
+model MasterEpisode {
+  id                String   @id @default(cuid())
+  userId            String
+  title             String   // 例：「大学時代の研究」「居酒屋のアルバイト」
+  category          String?  // 例：「自己PR」「ガクチカ」「困難を乗り越えた経験」
+  summaryConclusion String   @db.Text
+  summaryChallenge  String   @db.Text
+  summaryAction     String   @db.Text
+  summaryResult     String   @db.Text
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId]) // ユーザーごとの検索を高速化
 }

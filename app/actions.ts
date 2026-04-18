@@ -105,3 +105,61 @@ export async function updateReview(questionId: string, reviewContent: string) {
     data: { reviewContent }
   })
 }
+
+// ---------------- マスターエピソード関連 ----------------
+
+export async function createMasterEpisode(
+  title: string,
+  category: string | null,
+  summaryConclusion: string,
+  summaryChallenge: string,
+  summaryAction: string,
+  summaryResult: string
+) {
+  const userId = await getValidatedUserId()
+  const newEpisode = await prisma.masterEpisode.create({
+    data: {
+      userId,
+      title,
+      category,
+      summaryConclusion,
+      summaryChallenge,
+      summaryAction,
+      summaryResult
+    }
+  })
+  revalidatePath('/episodes')
+  return newEpisode
+}
+
+export async function updateMasterEpisode(
+  id: string,
+  title: string,
+  category: string | null,
+  summaryConclusion: string,
+  summaryChallenge: string,
+  summaryAction: string,
+  summaryResult: string
+) {
+  const userId = await getValidatedUserId()
+  await prisma.masterEpisode.update({
+    where: { id, userId },
+    data: {
+      title,
+      category,
+      summaryConclusion,
+      summaryChallenge,
+      summaryAction,
+      summaryResult
+    }
+  })
+  revalidatePath('/episodes')
+}
+
+export async function deleteMasterEpisode(id: string) {
+  const userId = await getValidatedUserId()
+  await prisma.masterEpisode.delete({
+    where: { id, userId }
+  })
+  revalidatePath('/episodes')
+}

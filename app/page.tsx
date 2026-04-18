@@ -13,11 +13,9 @@ export default async function Home() {
     orderBy: { deadline: 'asc' }
   })
 
-  // 統計の計算
-  const total = companies.length
-  const offered = companies.filter(c => c.status === COMPANY_STATUS.OFFER).length
-  const esSubmitted = companies.filter(c => c.status === COMPANY_STATUS.ES_SUBMITTED).length
-  const interviewing = companies.filter(c => c.status.includes('面接')).length
+  // =====================
+  // 統計計算は削除
+  // =====================
 
   // 締め切りが近い企業（7日以内、期限切れ含む）
   const now = new Date()
@@ -87,32 +85,29 @@ export default async function Home() {
         </div>
 
         {/* =======================
-            Widget B: 統計サマリー
+            Widget B: マスターエピソード・バンク
             ======================= */}
-        <div className="md:col-span-8 bg-gradient-to-br from-zinc-900 to-zinc-900/50 border border-zinc-800 rounded-[32px] p-6 md:p-8 shadow-sm flex flex-col justify-between min-h-[200px] md:min-h-[296px]">
-          <h2 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-6 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> Overview Status
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-1">
-            <div className="text-center bg-zinc-800/40 rounded-2xl p-4 border border-zinc-700/50 flex flex-col justify-center items-center">
-              <div className="text-4xl font-black text-zinc-100">{total}</div>
-              <div className="text-xs font-bold text-zinc-400 mt-2">総エントリー</div>
-            </div>
-            <div className="text-center bg-zinc-800/40 rounded-2xl p-4 border border-zinc-700/50 flex flex-col justify-center items-center">
-              <div className="text-4xl font-black text-emerald-400">{esSubmitted}</div>
-              <div className="text-xs font-bold text-zinc-400 mt-2">ES 提出済</div>
-            </div>
-            <div className="text-center bg-zinc-800/40 rounded-2xl p-4 border border-zinc-700/50 flex flex-col justify-center items-center">
-              <div className="text-4xl font-black text-amber-500">{interviewing}</div>
-              <div className="text-xs font-bold text-zinc-400 mt-2">面接進行中</div>
-            </div>
-            <div className="text-center bg-indigo-900/20 rounded-2xl p-4 shadow-sm border border-indigo-500/30 flex flex-col justify-center items-center relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-2 text-xl opacity-20">🎉</div>
-              <div className="text-4xl font-black text-rose-500">{offered}</div>
-              <div className="text-xs font-bold text-indigo-300 mt-2">祝！内定獲得</div>
+        <Link href="/episodes" className="md:col-span-8 bg-gradient-to-br from-indigo-900/20 via-zinc-900 to-black border border-indigo-500/20 rounded-[32px] p-6 md:p-8 shadow-sm flex flex-col justify-between min-h-[200px] md:min-h-[296px] group hover:border-indigo-500/50 hover:shadow-[0_8px_30px_rgb(79,70,229,0.15)] transition-all duration-500 relative overflow-hidden focus:outline-none focus:ring-4 focus:ring-indigo-500/50">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:bg-indigo-500/20 transition-all duration-700"></div>
+          
+          <div className="relative z-10">
+            <h2 className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span> Episode Bank
+            </h2>
+            <h3 className="text-3xl md:text-4xl font-extrabold text-white mt-4 tracking-tight leading-tight drop-shadow-md">
+              マスターエピソード的<br className="md:hidden" />バンク
+            </h3>
+            <p className="text-indigo-200/70 mt-4 max-w-md text-sm md:text-base font-medium leading-relaxed">
+              面接で何度も使い回せる「最強のエピソード集」を構築。一瞬で思い出し、自信を持って語れるよう事前にストックを貯めましょう。
+            </p>
+          </div>
+          
+          <div className="mt-8 flex items-center gap-3 text-indigo-300 font-bold group-hover:text-indigo-200 transition-colors relative z-10">
+            <div className="bg-indigo-600/20 px-5 py-2.5 rounded-full border border-indigo-500/30 flex items-center gap-2 group-hover:bg-indigo-500/40 transition-all backdrop-blur-sm shadow-sm">
+              エピソードを管理する <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
             </div>
           </div>
-        </div>
+        </Link>
 
         {/* =======================
             Widget C: 締め切り間近（データがある場合のみ表示）
