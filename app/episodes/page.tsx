@@ -15,7 +15,12 @@ export default async function EpisodeBankPage() {
 
   const episodes = await prisma.masterEpisode.findMany({
     where: { userId },
-    orderBy: { updatedAt: 'desc' }
+    orderBy: { updatedAt: 'desc' },
+    include: {
+      interviewQuestions: {
+        select: { id: true }
+      }
+    }
   })
 
   return (
@@ -31,11 +36,14 @@ export default async function EpisodeBankPage() {
         </div>
         
         <div className="flex items-center gap-3">
-          <Link href="/" className="text-sm font-bold bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white px-4 py-2 rounded-xl transition-colors hidden md:block">
+          <Link href="/episodes/questions" className="text-sm font-bold bg-zinc-800 text-zinc-300 hover:text-white px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2">
+            <span>💬</span> 質問アーカイブ
+          </Link>
+          <Link href="/" className="text-sm font-bold bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white px-4 py-2.5 rounded-xl transition-colors hidden md:block">
             &larr; ダッシュボード
           </Link>
           <Link href="/episodes/new" className="bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-500 px-5 py-2.5 rounded-xl font-bold transition shadow-sm hover:shadow-indigo-500/20 active:scale-95 flex items-center gap-2">
-            <span>➕</span> 新規エピソード登録
+            <span>➕</span> 新規登録
           </Link>
         </div>
       </div>
