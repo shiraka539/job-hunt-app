@@ -2,12 +2,16 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { linkMasterEpisodeToCompany, unlinkMasterEpisodeFromCompany, updateCompanyMasterEpisodeMemo } from '../../../actions'
-import QuestionSidebar from './QuestionSidebar'
+import { 
+  linkMasterEpisodeToSection, 
+  unlinkMasterEpisodeFromSection, 
+  updateSectionMasterEpisodeMemo,
+  updateCompanyMemos
+} from '@/app/actions'
 
-type TacticsEpisode = {
+type SectionMasterEpisode = {
   id: string
-  companyId: string
+  sectionId: string
   masterEpisodeId: string
   customMemo: string | null
   order: number
@@ -22,6 +26,12 @@ type TacticsEpisode = {
   }
 }
 
+type SectionType = {
+  id: string
+  type: string
+  tacticalEpisodes: SectionMasterEpisode[]
+}
+
 type BankEpisode = {
   id: string
   title: string
@@ -29,215 +39,292 @@ type BankEpisode = {
 }
 
 type Props = {
-  company: { id: string; name: string }
-  tacticalEpisodes: TacticsEpisode[]
+  company: { 
+    id: string
+    name: string
+    motivation: string | null
+    researchMemo: string | null
+  }
+  sections: SectionType[]
   allMasterEpisodes: BankEpisode[]
   questions: any[]
 }
 
-export default function TacticalBoardClient({ company, tacticalEpisodes, allMasterEpisodes, questions }: Props) {
+export default function TacticalBoardClient({ company, sections, allMasterEpisodes, questions }: Props) {
   const [isFocusMode, setIsFocusMode] = useState(false)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [memos, setMemos] = useState<Record<string, string>>({})
-  const [savingMemos, setSavingMemos] = useState<Record<string, boolean>>({})
+  const [activeSectionIdForModal, setActiveSectionIdForModal] = useState<string | null>(null)
+  
+  // Memos for episodes: key is `${sectionId}_${masterEpisodeId}`
+  const [episodeMemos, setEpisodeMemos] = useState<Record<string, string>>({})
+  
+  // Company Memos
+  const [motivation, setMotivation] = useState(company.motivation || '')
+  const [researchMemo, setResearchMemo] = useState(company.researchMemo || '')
+  const [isSaving, setIsSaving] = useState(false)
 
-  // Initialize memos state from props
+  // Initialize episode memos state from props
   useEffect(() => {
     const initialMemos: Record<string, string> = {}
-    tacticalEpisodes.forEach(t => {
-      initialMemos[t.masterEpisodeId] = t.customMemo || ''
+    sections.forEach(sec => {
+      sec.tacticalEpisodes.forEach(t => {
+        initialMemos[`${sec.id}_${t.masterEpisodeId}`] = t.customMemo || ''
+      })
     })
-    setMemos(initialMemos)
-  }, [tacticalEpisodes])
+    setEpisodeMemos(initialMemos)
+  }, [sections])
 
-  const handleLinkToggle = async (masterEpisodeId: string) => {
-    const isLinked = tacticalEpisodes.some(t => t.masterEpisodeId === masterEpisodeId)
+  const handleLinkToggle = async (sectionId: string, masterEpisodeId: string) => {
+    const section = sections.find(s => s.id === sectionId)
+    const isLinked = section?.tacticalEpisodes.some(t => t.masterEpisodeId === masterEpisodeId)
+    
     if (isLinked) {
-      await unlinkMasterEpisodeFromCompany(company.id, masterEpisodeId)
+      await unlinkMasterEpisodeFromSection(company.id, sectionId, masterEpisodeId)
     } else {
-      await linkMasterEpisodeToCompany(company.id, masterEpisodeId)
+      await linkMasterEpisodeToSection(company.id, sectionId, masterEpisodeId)
     }
   }
 
-  const handleMemoChange = (masterEpisodeId: string, val: string) => {
-    setMemos(prev => ({ ...prev, [masterEpisodeId]: val }))
+  const handleEpisodeMemoChange = (sectionId: string, masterEpisodeId: string, val: string) => {
+    setEpisodeMemos(prev => ({ ...prev, [`${sectionId}_${masterEpisodeId}`]: val }))
   }
 
-  const handleMemoBlur = async (masterEpisodeId: string) => {
-    const currentVal = memos[masterEpisodeId] || ''
-    const originalTactics = tacticalEpisodes.find(t => t.masterEpisodeId === masterEpisodeId)
-    if (originalTactics && originalTactics.customMemo !== currentVal) {
-      setSavingMemos(prev => ({ ...prev, [masterEpisodeId]: true }))
-      await updateCompanyMasterEpisodeMemo(company.id, masterEpisodeId, currentVal)
-      setTimeout(() => {
-        setSavingMemos(prev => ({ ...prev, [masterEpisodeId]: false }))
-      }, 500)
+  const handleGlobalSave = async () => {
+    setIsSaving(true)
+    try {
+      // Save company memos
+      if (motivation !== (company.motivation || '') || researchMemo !== (company.researchMemo || '')) {
+        await updateCompanyMemos(company.id, motivation, researchMemo)
+      }
+
+      // Save all episode memos
+      for (const sec of sections) {
+        for (const t of sec.tacticalEpisodes) {
+          const key = `${sec.id}_${t.masterEpisodeId}`
+          const currentVal = episodeMemos[key]
+          if (currentVal !== undefined && currentVal !== t.customMemo) {
+            await updateSectionMasterEpisodeMemo(company.id, sec.id, t.masterEpisodeId, currentVal)
+          }
+        }
+      }
+      
+      alert('すべてのメモを保存しました！')
+    } catch (error) {
+      alert('保存に失敗しました')
+    } finally {
+      setIsSaving(false)
     }
   }
 
   return (
-    <div className={`transition-all duration-500 ease-in-out ${isFocusMode ? 'p-0' : 'p-4 md:p-8'}`}>
+    <div className={`transition-all duration-300 ${isFocusMode ? 'p-0 w-[95%] max-w-6xl mx-auto' : ''} pb-32`}>
       
-      {/* Header (Hidden in Focus Mode) */}
-      <div className={`mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 ${isFocusMode ? 'h-0 opacity-0 overflow-hidden mb-0' : 'opacity-100'}`}>
-        <div className="flex items-center gap-3">
-          <Link href="/" className="text-zinc-400 hover:text-zinc-200 transition bg-zinc-800 px-3 py-1.5 md:px-4 md:py-2 border border-zinc-700 rounded-lg shadow-sm text-sm font-bold whitespace-nowrap active:scale-95">
-            ← 戻る
-          </Link>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-zinc-100 truncate flex items-center gap-2">
-            {company.name} <span className="text-zinc-500 font-bold ml-1 text-lg">/ タクティカル・ボード</span>
-          </h1>
-        </div>
-        <div className="flex gap-3">
-          <button 
-            onClick={() => setIsModalOpen(true)}
-            className="bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-bold px-4 py-2 rounded-xl hover:bg-indigo-600/40 transition-colors shadow-sm active:scale-95"
-          >
-            ＋ エピソードを編成
-          </button>
-          <button 
-            onClick={() => setIsFocusMode(true)}
-            className="bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 font-bold px-4 py-2 rounded-xl hover:bg-emerald-600/40 transition-colors shadow-sm flex items-center gap-2 active:scale-95"
-          >
-            <span>🎯</span> Focus Mode
-          </button>
-        </div>
-      </div>
-
-      {/* Focus Mode Exit Bar */}
-      {isFocusMode && (
-        <div className="fixed top-0 left-0 w-full h-2 group hover:h-12 transition-all duration-300 z-50 flex items-center justify-center bg-transparent">
-          <button 
-            onClick={() => setIsFocusMode(false)}
-            className="opacity-0 group-hover:opacity-100 bg-zinc-800/90 text-zinc-300 border border-zinc-700 text-xs font-bold px-6 py-2 rounded-full transform -translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-xl backdrop-blur-sm"
-          >
-            Focus Modeを終了
-          </button>
-        </div>
-      )}
-
-      {/* Layout Grid */}
-      <div className={`grid grid-cols-1 ${isFocusMode ? 'md:grid-cols-1' : 'md:grid-cols-12'} gap-6`}>
+      {/* 🌟 全体カード（画像の外側のグレー背景） */}
+      <div className={`bg-[#1c1c1e] ${isFocusMode ? 'rounded-none min-h-screen border-x border-zinc-800/50' : 'rounded-[24px] shadow-xl border border-zinc-800/50'} p-6 md:p-8 transition-all`}>
         
-        {/* Main Board Area */}
-        <div className={`flex flex-col gap-8 transition-all duration-500 ${isFocusMode ? 'w-[90%] max-w-5xl mx-auto pt-10' : 'md:col-span-8 lg:col-span-9'}`}>
-          {tacticalEpisodes.length === 0 ? (
-            <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-12 text-center shadow-sm">
-              <div className="text-6xl mb-4 opacity-50">🧭</div>
-              <h2 className="text-xl font-bold text-zinc-100 mb-2">まだエピソードがセットされていません</h2>
-              <p className="text-zinc-400 mb-6 font-medium">右上の「エピソードを編成」から、面接で話す予定のネタを選んでください。</p>
-              <button 
-                onClick={() => setIsModalOpen(true)}
-                className="bg-indigo-600 text-white font-bold px-6 py-3 rounded-xl hover:bg-indigo-700 transition duration-300 shadow-lg active:scale-95"
-              >
-                エピソードを選ぶ
-              </button>
-            </div>
-          ) : (
-            tacticalEpisodes.map((tactics, i) => (
-              <div key={tactics.id} className="bg-zinc-900 border border-zinc-800 rounded-[2rem] overflow-hidden shadow-2xl relative group">
-                {/* 順序バッジ */}
-                <div className="absolute top-0 left-0 bg-indigo-900/50 text-indigo-400 font-black text-xl px-4 py-2 rounded-br-2xl border-b border-r border-indigo-500/20 z-10 shadow-sm backdrop-blur-md">
-                  #{i + 1}
-                </div>
-                
-                <div className="p-4 md:p-6 pt-10 md:pt-10">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
-                    <div>
-                      <h2 className="text-xl md:text-2xl font-extrabold text-zinc-100 tracking-tight leading-tight mb-1">
-                        {tactics.masterEpisode.title}
-                      </h2>
-                      {tactics.masterEpisode.category && (
-                        <span className="inline-block bg-zinc-800 text-zinc-300 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider border border-zinc-700">
-                          {tactics.masterEpisode.category}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 4ステップグリッド フル表示 */}
-                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 mb-5">
-                    {[
-                      { title: 'Conclusion', label: '① 結論・強み', content: tactics.masterEpisode.summaryConclusion, color: 'text-emerald-400', bg: 'bg-emerald-900/10', border: 'border-emerald-800/30' },
-                      { title: 'Challenge', label: '② 課題・目標', content: tactics.masterEpisode.summaryChallenge, color: 'text-amber-400', bg: 'bg-amber-900/10', border: 'border-amber-800/30' },
-                      { title: 'Action', label: '③ 具体行動', content: tactics.masterEpisode.summaryAction, color: 'text-indigo-400', bg: 'bg-indigo-900/10', border: 'border-indigo-800/30' },
-                      { title: 'Result', label: '④ 結果・学び', content: tactics.masterEpisode.summaryResult, color: 'text-rose-400', bg: 'bg-rose-900/10', border: 'border-rose-800/30' },
-                    ].map(step => (
-                      <div key={step.title} className={`${step.bg} border ${step.border} rounded-xl p-3 flex flex-col shadow-inner`}>
-                        <h4 className={`text-[10px] font-black uppercase tracking-widest mb-1.5 flex items-center gap-1 ${step.color}`}>
-                          {step.label}
-                        </h4>
-                        <p className="text-zinc-200 text-xs md:text-sm leading-relaxed whitespace-pre-wrap font-medium flex-grow">
-                          {step.content || <span className="text-zinc-600 italic">未記入</span>}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Tuning Memo */}
-                  <div className="relative">
-                    <div className="absolute -top-3 left-4 bg-zinc-900 px-2 flex items-center gap-2">
-                      <span className="text-[10px] font-black text-emerald-400 tracking-wider">Tuning for {company.name}</span>
-                    </div>
-                    <div className="border border-emerald-800/50 rounded-xl bg-black/40 p-1 focus-within:border-emerald-500/50 transition-colors shadow-inner">
-                      <textarea
-                        className="w-full bg-transparent text-emerald-100 placeholder-zinc-700/50 outline-none p-2 resize-y min-h-[60px] text-xs md:text-sm font-medium leading-relaxed"
-                        placeholder={`この企業だからこそ強調したい点、面接官の反応に合わせて変更する言い回しなどをメモします... \n例: 「御社の〇〇事業に通じるため、〇〇の経験を多めに話す」`}
-                        value={memos[tactics.masterEpisodeId] ?? ''}
-                        onChange={(e) => handleMemoChange(tactics.masterEpisodeId, e.target.value)}
-                        onBlur={() => handleMemoBlur(tactics.masterEpisodeId)}
-                      />
-                    </div>
-                    {/* 保存状態インジケータ */}
-                    {savingMemos[tactics.masterEpisodeId] && (
-                      <span className="absolute bottom-4 right-4 text-xs font-bold text-emerald-500 animate-pulse">Saving...</span>
-                    )}
-                  </div>
-
-                </div>
-              </div>
-            ))
-          )}
+        {/* ヘッダー・アクション */}
+        <div className={`flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 transition-all duration-300 ${isFocusMode ? 'h-0 opacity-0 overflow-hidden mb-0' : 'opacity-100'}`}>
+          <div className="flex items-center gap-4">
+            <Link href="/" className="text-zinc-400 hover:text-zinc-200 transition bg-zinc-800 px-3 py-1.5 md:px-4 md:py-2 border border-zinc-700 rounded-lg shadow-sm text-xs md:text-sm font-bold whitespace-nowrap">
+              ← 戻る
+            </Link>
+            <h2 className="text-xl md:text-2xl font-bold text-white flex items-center gap-3">
+              <span className="text-zinc-300">🎯</span> タクティカル・ボード
+            </h2>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsFocusMode(true)}
+              className="bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 font-bold px-4 py-2.5 rounded-xl hover:bg-emerald-600/40 transition-colors text-sm flex items-center gap-2 whitespace-nowrap"
+            >
+              <span>🔍</span> Focus Mode
+            </button>
+            <button 
+              onClick={handleGlobalSave}
+              disabled={isSaving}
+              className={`font-bold px-6 py-2.5 rounded-xl transition-all text-sm shadow-lg flex items-center gap-2 whitespace-nowrap ${
+                isSaving 
+                  ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700' 
+                  : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white hover:shadow-indigo-500/25 border border-indigo-500'
+              }`}
+            >
+              <span>💾</span> {isSaving ? '保存中...' : '保存する'}
+            </button>
+          </div>
         </div>
 
-        {/* Sidebar */}
-        {!isFocusMode && (
-          <div className="md:col-span-4 lg:col-span-3 transition-opacity duration-500">
-            <QuestionSidebar questions={questions} companyName={company.name} />
+        {/* Focus Mode Exit Bar */}
+        {isFocusMode && (
+          <div className="sticky top-0 z-50 flex justify-end p-4 -mt-4 -mr-4 mb-4">
+            <button 
+              onClick={() => setIsFocusMode(false)}
+              className="bg-zinc-800/90 text-zinc-300 hover:text-white border border-zinc-700 text-sm font-bold px-6 py-2 rounded-xl transition-all duration-300 shadow-xl backdrop-blur-sm flex items-center gap-2"
+            >
+              Focus Modeを終了
+            </button>
+          </div>
+        )}
+
+        {/* 企業軸・メモ */}
+        <div className="mb-10">
+          <h3 className="text-lg font-bold text-zinc-300 mb-4 flex items-center gap-2">
+            <span className="text-zinc-500">🏢</span> 企業軸・メモ
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-[#121212] rounded-2xl p-6 border border-zinc-800/30">
+              <label className="block text-xs font-bold text-zinc-400 mb-2">Motivation (志望動機)</label>
+              <textarea
+                className="w-full bg-[#1f1f1f] text-zinc-200 p-4 rounded-xl min-h-[120px] resize-y border border-transparent focus:border-indigo-500/50 focus:outline-none transition-colors leading-relaxed"
+                placeholder="なぜこの企業に入りたいのか、軸となる志望動機をメモ..."
+                value={motivation}
+                onChange={(e) => setMotivation(e.target.value)}
+              />
+              <div className="text-right mt-2 text-xs font-bold text-zinc-500">{motivation.length} 文字</div>
+            </div>
+            <div className="bg-[#121212] rounded-2xl p-6 border border-zinc-800/30">
+              <label className="block text-xs font-bold text-zinc-400 mb-2">Research (企業研究メモ)</label>
+              <textarea
+                className="w-full bg-[#1f1f1f] text-zinc-200 p-4 rounded-xl min-h-[120px] resize-y border border-transparent focus:border-indigo-500/50 focus:outline-none transition-colors leading-relaxed"
+                placeholder="面接で使えそうな逆質問、企業の特徴やニュースなどをメモ..."
+                value={researchMemo}
+                onChange={(e) => setResearchMemo(e.target.value)}
+              />
+              <div className="text-right mt-2 text-xs font-bold text-zinc-500">{researchMemo.length} 文字</div>
+            </div>
+          </div>
+        </div>
+
+        <hr className="border-zinc-800/50 mb-10" />
+
+        {/* 選考フェーズ（Section）軸のリスト */}
+        {sections.length === 0 ? (
+          <div className="text-center py-20 text-zinc-400 bg-[#121212] rounded-2xl border border-zinc-800/30">
+            <p className="mb-5 text-lg font-bold">選考フェーズがありません</p>
+            <p className="text-sm">ES管理画面から選考フェーズ（ES、一次面接など）を追加してください。</p>
+          </div>
+        ) : (
+          <div className="space-y-12">
+            {sections.map((section) => (
+              <div key={section.id}>
+                {/* Section Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-white flex items-center gap-3">
+                    <span className="text-indigo-500">❖</span> {section.type}
+                  </h3>
+                  <button 
+                    onClick={() => setActiveSectionIdForModal(section.id)}
+                    className="bg-[#2c2c2e] hover:bg-[#3c3c3e] text-zinc-300 font-bold px-4 py-2.5 rounded-xl transition-colors text-sm border border-zinc-700 whitespace-nowrap flex items-center gap-2"
+                  >
+                    <span>＋</span> エピソード編成
+                  </button>
+                </div>
+
+                {/* Section Episodes */}
+                {section.tacticalEpisodes.length === 0 ? (
+                  <div className="text-center py-10 text-zinc-500 bg-[#121212] rounded-2xl border border-zinc-800/30 border-dashed">
+                    <p className="text-sm font-bold">エピソードが編成されていません。「＋エピソード編成」から追加してください。</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {section.tacticalEpisodes.map((tactics, i) => {
+                      const memoKey = `${section.id}_${tactics.masterEpisodeId}`
+                      const currentMemo = episodeMemos[memoKey] ?? ''
+                      const ep = tactics.masterEpisode
+
+                      return (
+                        <div key={tactics.id} className="bg-[#121212] rounded-2xl p-6 border border-zinc-800/30 relative group">
+                          {/* 順序バッジ */}
+                          <div className="absolute top-0 left-0 bg-[#2c2c2e] text-zinc-400 font-black text-sm px-3 py-1.5 rounded-br-xl border-b border-r border-zinc-700/50 z-10 shadow-sm">
+                            #{i + 1}
+                          </div>
+                          
+                          <div className="pt-4 mb-6">
+                            <h4 className="text-xl font-bold text-white mb-2 ml-1">
+                              {ep.title}
+                            </h4>
+                            {ep.category && (
+                              <span className="inline-block bg-[#1f1f1f] text-zinc-400 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider border border-zinc-800/80 ml-1">
+                                {ep.category}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* 4項目展開（完全表示） */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                            {[
+                              { label: 'Q. 結論（一言で言うと？）', content: ep.summaryConclusion },
+                              { label: 'Q. 課題（直面した困難は？）', content: ep.summaryChallenge },
+                              { label: 'Q. 行動（どう解決した？）', content: ep.summaryAction },
+                              { label: 'Q. 結果（得られた成果は？）', content: ep.summaryResult },
+                            ].map((step, idx) => (
+                              <div key={idx} className="mb-2">
+                                <label className="block text-xs font-bold text-zinc-400 mb-2">{step.label}</label>
+                                <div className="w-full bg-[#1f1f1f] text-zinc-300 p-4 rounded-xl min-h-[140px] border border-transparent leading-relaxed text-sm whitespace-pre-wrap flex flex-col justify-between">
+                                  <span>{step.content || <span className="text-zinc-600 italic">未記入</span>}</span>
+                                  <div className="text-right mt-3 text-[10px] font-bold text-zinc-500">{step.content.length} 文字</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* 企業別メモ (Tuning Memo) */}
+                          <div className="mt-6 border-t border-zinc-800/50 pt-6">
+                            <label className="block text-xs font-bold text-emerald-400 mb-2 flex items-center gap-2">
+                              <span>📝</span> Tuning for {section.type}（微調整用メモ）
+                            </label>
+                            <textarea
+                              className="w-full bg-[#1f1f1f] text-emerald-100/90 p-4 rounded-xl min-h-[100px] resize-y border border-transparent focus:border-emerald-500/50 focus:outline-none transition-colors leading-relaxed text-sm placeholder-emerald-900/50"
+                              placeholder={`このフェーズだからこそ強調したい点、面接官の反応に合わせて変更する言い回しなどをメモします...\n例: 「一次面接なので、専門用語は控えめに伝える」`}
+                              value={currentMemo}
+                              onChange={(e) => handleEpisodeMemoChange(section.id, tactics.masterEpisodeId, e.target.value)}
+                            />
+                            <div className="text-right mt-2 text-xs font-bold text-emerald-600/50">{currentMemo.length} 文字</div>
+                          </div>
+
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>
 
       {/* Episode Picker Modal */}
-      {isModalOpen && (
+      {activeSectionIdForModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setActiveSectionIdForModal(null)}></div>
           
-          <div className="relative bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/90 rounded-t-3xl border-b-black/20">
-              <h2 className="text-xl font-black text-zinc-100 flex items-center gap-2">
-                <span className="text-indigo-400">❖</span> バンクからエピソードを編成
-              </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-zinc-500 hover:text-zinc-200 text-2xl font-bold transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-800">×</button>
+          <div className="relative bg-[#1c1c1e] border border-zinc-800 rounded-3xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-zinc-800 flex justify-between items-center bg-[#1c1c1e] rounded-t-3xl border-b-black/20">
+              <div>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <span className="text-indigo-500">❖</span> バンクからエピソードを編成
+                </h2>
+                <p className="text-xs text-zinc-400 font-bold mt-2 ml-8">対象フェーズ: {sections.find(s => s.id === activeSectionIdForModal)?.type}</p>
+              </div>
+              <button onClick={() => setActiveSectionIdForModal(null)} className="text-zinc-500 hover:text-zinc-200 text-2xl font-bold transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#2c2c2e]">×</button>
             </div>
             
-            <div className="p-6 overflow-y-auto flex-1 space-y-3">
+            <div className="p-6 overflow-y-auto flex-1 space-y-3 bg-[#121212]">
               {allMasterEpisodes.length === 0 ? (
-                <div className="text-center py-10 text-zinc-500 font-medium">
-                  マスターエピソードがまだありません。<br/>メインダッシュボードから登録してください。
+                <div className="text-center py-10 text-zinc-500 font-bold">
+                  マスターエピソードがまだありません。<br/>ダッシュボードから登録してください。
                 </div>
               ) : (
                 allMasterEpisodes.map(ep => {
-                  const isLinked = tacticalEpisodes.some(t => t.masterEpisodeId === ep.id)
+                  const section = sections.find(s => s.id === activeSectionIdForModal)
+                  const isLinked = section?.tacticalEpisodes.some(t => t.masterEpisodeId === ep.id)
                   return (
                     <div 
                       key={ep.id} 
-                      onClick={() => handleLinkToggle(ep.id)}
-                      className={`cursor-pointer p-4 rounded-2xl border transition-all duration-200 flex items-center justify-between group active:scale-[0.98] ${
+                      onClick={() => handleLinkToggle(activeSectionIdForModal, ep.id)}
+                      className={`cursor-pointer p-4 rounded-xl border transition-all duration-200 flex items-center justify-between group active:scale-[0.98] ${
                         isLinked 
-                        ? 'bg-indigo-900/20 border-indigo-500/50 text-indigo-100' 
-                        : 'bg-black/40 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-800/50 text-zinc-300'
+                        ? 'bg-[#2c2c2e] border-zinc-600 text-white' 
+                        : 'bg-[#1f1f1f] border-zinc-800/50 hover:border-zinc-700 text-zinc-300'
                       }`}
                     >
                       <div>
@@ -245,7 +332,7 @@ export default function TacticalBoardClient({ company, tacticalEpisodes, allMast
                         {ep.category && <div className="text-xs font-bold opacity-60 uppercase tracking-widest">{ep.category}</div>}
                       </div>
                       <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
-                        isLinked ? 'bg-indigo-500 text-white' : 'bg-zinc-800 text-zinc-500 group-hover:bg-zinc-700'
+                        isLinked ? 'bg-indigo-500 text-white' : 'bg-[#2c2c2e] text-zinc-500 group-hover:bg-[#3c3c3e]'
                       }`}>
                         {isLinked && '✓'}
                         {!isLinked && '+'}
@@ -256,8 +343,8 @@ export default function TacticalBoardClient({ company, tacticalEpisodes, allMast
               )}
             </div>
             
-            <div className="p-4 border-t border-zinc-800 bg-black/20 rounded-b-3xl">
-              <p className="text-xs text-zinc-500 font-medium text-center">選択したエピソードは自動的にボードへ追加されます。</p>
+            <div className="p-4 border-t border-zinc-800 bg-[#1c1c1e] rounded-b-3xl">
+              <p className="text-xs text-zinc-500 font-bold text-center">選択したエピソードは自動的にボードへ追加されます。</p>
             </div>
           </div>
         </div>

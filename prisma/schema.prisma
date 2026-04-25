@@ -17,14 +17,14 @@ model Company {
   deadline      DateTime? // ES・選考の締め切り日
   applicationId String?   // 企業発行の管理番号等
   questions     Json?     // ESなどの設問リストを保持するJSON
+  interviewQuestions Json? // 面接対策用の動的JSONデータ
+  motivation    String?   @db.Text // 志望動機
+  researchMemo  String?   @db.Text // 企業研究メモ
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   // リレーション：1つの企業は複数の選考フェーズ（Section）を持つ
   sections  Section[]
-  
-  // 実戦用ボード（企業ごとに紐付けたマスターエピソード）
-  tacticalEpisodes CompanyMasterEpisode[]
 }
 
 // 選考フェーズ（適性検査、ES、1次面接など）
@@ -38,6 +38,8 @@ model Section {
   company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
   // リレーション：1つのフェーズは複数の設問（Question）を持つ
   questions Question[]
+  // リレーション：1つのフェーズは複数のマスターエピソード（実戦用ボード）を持つ
+  tacticalEpisodes SectionMasterEpisode[]
 }
 
 // 設問と回答（エディター部分）
@@ -100,27 +102,27 @@ model MasterEpisode {
   updatedAt         DateTime @updatedAt
 
   interviewQuestions InterviewQuestion[]
-  companyMasterEpisodes CompanyMasterEpisode[]
+  sectionMasterEpisodes SectionMasterEpisode[]
 
   @@index([userId]) // ユーザーごとの検索を高速化
 }
 
-// 面接対策「実戦用ボード」用の中間テーブル
-model CompanyMasterEpisode {
+// 面接対策「実戦用ボード」用の中間テーブル（Sectionごと）
+model SectionMasterEpisode {
   id              String   @id @default(cuid())
-  companyId       String
+  sectionId       String
   masterEpisodeId String
-  customMemo      String?  @db.Text // その企業向けの話し方の微調整用メモ
+  customMemo      String?  @db.Text // その選考・企業向けの話し方の微調整用メモ
   order           Int      @default(0) // 表示順
 
-  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  section         Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   masterEpisode   MasterEpisode @relation(fields: [masterEpisodeId], references: [id], onDelete: Cascade)
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  @@unique([companyId, masterEpisodeId])
-  @@index([companyId])
+  @@unique([sectionId, masterEpisodeId])
+  @@index([sectionId])
   @@index([masterEpisodeId])
 }
 

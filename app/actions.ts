@@ -23,6 +23,16 @@ export async function addCompany(name: string, deadline: string | null = null, a
   revalidatePath('/')
 }
 
+export async function updateCompanyInterviewQuestions(companyId: string, questions: any[]) {
+  const userId = await getValidatedUserId()
+  // 自分の企業かどうか確認してから更新
+  await prisma.company.update({
+    where: { id: companyId, userId },
+    data: { interviewQuestions: questions }
+  })
+  revalidatePath(`/company/${companyId}/interview`)
+}
+
 export async function updateCompany(companyId: string, name: string, status: string, myPageUrl: string | null, deadline: string | null = null, applicationId: string | null = null) {
   const userId = await getValidatedUserId()
   await prisma.company.update({
@@ -164,9 +174,9 @@ export async function deleteMasterEpisode(id: string) {
   revalidatePath('/episodes')
 }
 
-// ---------------- 実戦用ボード（CompanyMasterEpisode）関連 ----------------
+// ---------------- 実戦用ボード（SectionMasterEpisode）関連 ----------------
 
-export async function linkMasterEpisodeToCompany(companyId: string, masterEpisodeId: string) {
+export async function linkMasterEpisodeToSection(companyId: string, sectionId: string, masterEpisodeId: string) {
   const userId = await getValidatedUserId()
   
   // 企業の所有者確認
@@ -174,28 +184,28 @@ export async function linkMasterEpisodeToCompany(companyId: string, masterEpisod
   if (!company) throw new Error("無効なリクエストです")
 
   // 現在の最大orderを取得
-  const maxOrderEpisode = await prisma.companyMasterEpisode.findFirst({
-    where: { companyId },
+  const maxOrderEpisode = await prisma.sectionMasterEpisode.findFirst({
+    where: { sectionId },
     orderBy: { order: 'desc' },
   })
   const nextOrder = maxOrderEpisode ? maxOrderEpisode.order + 1 : 0
 
-  const linked = await prisma.companyMasterEpisode.create({
-    data: { companyId, masterEpisodeId, order: nextOrder }
+  const linked = await prisma.sectionMasterEpisode.create({
+    data: { sectionId, masterEpisodeId, order: nextOrder }
   })
   revalidatePath(`/company/${companyId}/interview`)
   return linked
 }
 
-export async function unlinkMasterEpisodeFromCompany(companyId: string, masterEpisodeId: string) {
+export async function unlinkMasterEpisodeFromSection(companyId: string, sectionId: string, masterEpisodeId: string) {
   const userId = await getValidatedUserId()
   const company = await prisma.company.findFirst({ where: { id: companyId, userId } })
   if (!company) throw new Error("無効なリクエストです")
 
-  await prisma.companyMasterEpisode.delete({
+  await prisma.sectionMasterEpisode.delete({
     where: {
-      companyId_masterEpisodeId: {
-        companyId,
+      sectionId_masterEpisodeId: {
+        sectionId,
         masterEpisodeId
       }
     }
@@ -203,15 +213,15 @@ export async function unlinkMasterEpisodeFromCompany(companyId: string, masterEp
   revalidatePath(`/company/${companyId}/interview`)
 }
 
-export async function updateCompanyMasterEpisodeMemo(companyId: string, masterEpisodeId: string, customMemo: string) {
+export async function updateSectionMasterEpisodeMemo(companyId: string, sectionId: string, masterEpisodeId: string, customMemo: string) {
   const userId = await getValidatedUserId()
   const company = await prisma.company.findFirst({ where: { id: companyId, userId } })
   if (!company) throw new Error("無効なリクエストです")
 
-  await prisma.companyMasterEpisode.update({
+  await prisma.sectionMasterEpisode.update({
     where: {
-      companyId_masterEpisodeId: {
-        companyId,
+      sectionId_masterEpisodeId: {
+        sectionId,
         masterEpisodeId
       }
     },
@@ -220,21 +230,32 @@ export async function updateCompanyMasterEpisodeMemo(companyId: string, masterEp
   revalidatePath(`/company/${companyId}/interview`)
 }
 
-export async function reorderCompanyMasterEpisodes(companyId: string, orderedIds: string[]) {
+export async function reorderSectionMasterEpisodes(companyId: string, sectionId: string, orderedIds: string[]) {
   const userId = await getValidatedUserId()
   const company = await prisma.company.findFirst({ where: { id: companyId, userId } })
   if (!company) throw new Error("無効なリクエストです")
 
   for (let i = 0; i < orderedIds.length; i++) {
-    await prisma.companyMasterEpisode.update({
+    await prisma.sectionMasterEpisode.update({
       where: {
-        companyId_masterEpisodeId: {
-          companyId,
+        sectionId_masterEpisodeId: {
+          sectionId,
           masterEpisodeId: orderedIds[i]
         }
       },
       data: { order: i }
     })
   }
+  revalidatePath(`/company/${companyId}/interview`)
+}
+
+// ---------------- 企業メモ関連 ----------------
+
+export async function updateCompanyMemos(companyId: string, motivation: string | null, researchMemo: string | null) {
+  const userId = await getValidatedUserId()
+  await prisma.company.update({
+    where: { id: companyId, userId },
+    data: { motivation, researchMemo }
+  })
   revalidatePath(`/company/${companyId}/interview`)
 }

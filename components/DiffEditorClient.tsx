@@ -45,7 +45,7 @@ export default function DiffEditorClient({ sectionId, initialQuestions, template
       alert('設問の追加に失敗しました')
     }
   }
-// 🌟 追加：設問を削除する処理
+
   const handleDeleteQuestion = async (id: string) => {
     if (!confirm('本当にこの設問を削除しますか？\n（入力した回答もすべて消えます！）')) return
 
@@ -72,188 +72,138 @@ export default function DiffEditorClient({ sectionId, initialQuestions, template
   }
 
   return (
-    <div className="space-y-8 pb-32">
-      {/* 設問一覧 */}
-      {questions.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center px-4 bg-zinc-900 rounded-[2rem] border border-zinc-800 shadow-sm transition-all">
-          <span className="text-6xl mb-4 opacity-70">📝</span>
-          <p className="text-zinc-400 font-black tracking-wide text-lg">まだESの内容が登録されていません。<br/>下のボタンから新しい設問を追加してください。</p>
-        </div>
-      ) : (
-        questions.map((q, index) => {
-          const originalText = initialQuestions.find(orig => orig.id === q.id)?.content || ''
-          const currentText = q.content || ''
-          
-          // 差分を計算
-          const changes = diffChars(originalText, currentText)
-          
-          const isOverLimit = q.maxLength ? currentText.length > q.maxLength : false
-
-          return (
-            <div key={q.id} className="bg-zinc-900/50 rounded-[2rem] shadow-none border border-zinc-800 p-6 md:p-8 transition-all">
-              {/* ヘッダー部分 */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-zinc-900 p-4 rounded-2xl border border-zinc-800/80">
-                <h2 className="text-xl md:text-2xl font-extrabold text-zinc-100 tracking-tight">
-                  <span className="text-indigo-400 mr-2">Q{index + 1}.</span> {q.title}
-                </h2>
-                
-                <div className="flex items-center gap-3 self-end md:self-auto">
-                  {q.maxLength && (
-                    <span className="text-xs md:text-sm bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg font-bold">
-                      上限 {q.maxLength}文字
-                    </span>
-                  )}
-                  {/* 🌟 差分モードじゃない時だけゴミ箱を表示 */}
-                  {!isDiffMode && (
-                    <button
-                      onClick={() => handleDeleteQuestion(q.id)}
-                      className="text-sm text-rose-400 hover:text-rose-300 font-bold px-3 py-1.5 rounded-lg border border-transparent hover:border-rose-900/50 hover:bg-rose-900/20 active:scale-95 transition-all"
-                    >
-                      🗑️ 削除
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* 添削内容は編集モードの時だけ上部に表示（参考用） */}
-              {!isDiffMode && q.reviewContent && (
-                <div className="mb-5 bg-emerald-50 border border-emerald-100 rounded-lg p-4">
-                  <h3 className="text-sm font-bold text-emerald-800 mb-2 flex items-center gap-2">
-                    💡 添削・フィードバック（参考用）
-                  </h3>
-                  <p className="text-emerald-900 whitespace-pre-wrap leading-relaxed text-sm">
-                    {q.reviewContent}
-                  </p>
-                </div>
-              )}
-
-              {isDiffMode ? (
-                // 🔍 【差分確認モード】上下分離UI！
-                <div className="space-y-6">
-                  
-                  {/* 🔴 【編集前 (Original)】：消した文字を赤い蛍光マーカーに！ */}
-                  <div className="bg-zinc-800/50 border-2 border-rose-900/50 rounded-[2rem] p-6 md:p-8 shadow-inner transition-colors">
-                    <h3 className="text-sm font-bold text-rose-400 mb-4 flex items-center gap-2">
-                      <span className="bg-rose-900/50 p-1.5 rounded-lg">🔴</span> 編集前 (Original)
-                    </h3>
-                    <p className="text-lg text-zinc-200 whitespace-pre-wrap leading-relaxed">
-                      {originalText === currentText ? (
-                        <span className="text-zinc-500">変更はありません</span>
-                      ) : (
-                        changes.map((part, i) => {
-                          // 🌟 消された文字だけを赤い蛍光マーカーに！
-                          if (part.removed) {
-                            return <span key={i} className="bg-rose-900/70 text-rose-100 px-1 rounded mx-0.5">{part.value}</span>
-                          } else if (!part.added) {
-                            // 追加された文字は表示しない（編集前の元の文章だから）
-                            return <span key={i}>{part.value}</span>
-                          }
-                          return null; // 追加された文字はnullでスキップ
-                        })
-                      )}
-                    </p>
-                  </div>
-
-                  {/* 🟢 【編集後 (Edited)】：足した文字を緑の蛍光マーカーに！ */}
-                  <div className="bg-zinc-800/50 border-2 border-emerald-900/50 rounded-[2rem] p-6 md:p-8 shadow-inner transition-colors">
-                    <h3 className="text-sm font-bold text-emerald-400 mb-4 flex items-center gap-2">
-                      <span className="bg-emerald-900/50 p-1.5 rounded-lg">🟢</span> 編集後 (Edited)
-                    </h3>
-                    <p className="text-lg text-zinc-200 whitespace-pre-wrap leading-relaxed">
-                      {originalText === currentText ? (
-                        <span className="text-zinc-500">変更はありません</span>
-                      ) : (
-                        changes.map((part, i) => {
-                          // 🌟 追加された文字だけを緑の蛍光マーカーに！
-                          if (part.added) {
-                            return <span key={i} className="bg-emerald-900/70 text-emerald-100 px-1 rounded font-medium mx-0.5">{part.value}</span>
-                          } else if (!part.removed) {
-                            // 消された文字は表示しない（編集後の今の文章だから）
-                            return <span key={i}>{part.value}</span>
-                          }
-                          return null; // 消された文字はnullでスキップ
-                        })
-                      )}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                // ✍️ 【編集モード】
-                <div className="relative mt-2">
-                  <textarea
-                    value={currentText}
-                    onChange={(e) => handleChange(q.id, e.target.value)}
-                    className={`w-full h-80 border rounded-2xl p-5 md:p-6 pb-14 text-zinc-100 bg-zinc-800 text-lg focus:ring-4 focus:outline-none resize-y leading-relaxed transition-all shadow-inner ${
-                      isOverLimit ? 'border-rose-500 focus:ring-rose-900/30 bg-rose-900/10' : 'border-zinc-700 focus:ring-indigo-900/30 focus:border-indigo-500'
-                    }`}
-                    placeholder="回答を入力してください..."
-                  />
-                  <div className={`absolute bottom-5 right-6 text-sm font-black tracking-wide ${isOverLimit ? 'text-rose-400' : 'text-zinc-500'}`}>
-                    {currentText.length} {q.maxLength ? `/ ${q.maxLength} 文字` : '文字'}
-                  </div>
-                </div>
-              )}
-            </div>
-          )
-        })
-      )}
-
-      {/* 設問追加ボタン */}
-      {!isDiffMode && (
-        <div className="flex justify-center py-8">
-          <button
-            onClick={handleAddQuestion}
-            className="text-indigo-400 font-extrabold bg-zinc-900/50 w-full py-6 md:py-8 text-lg rounded-[2rem] border-2 border-dashed border-zinc-700 hover:bg-zinc-800 hover:border-zinc-600 active:scale-[0.99] transition-all shadow-sm flex items-center justify-center gap-2"
-          >
-            ＋ 新しい設問を追加する
-          </button>
-        </div>
-      )}
-
-      {/* 🌟 ダークモード・Bento Grid対応アクションバー */}
-      <div className="fixed bottom-0 md:bottom-6 left-0 right-0 bg-transparent flex justify-center z-50 pb-safe md:px-6 pointer-events-none"> 
-        <div className="max-w-4xl w-full flex justify-between items-center gap-4 bg-zinc-900/90 md:bg-zinc-900/90 backdrop-blur-xl p-4 md:rounded-3xl border-t md:border border-zinc-800 pointer-events-auto">
-          
-          {isDiffMode ? (
-            // 🔍 差分モード中
-            <>
-              <button
-                onClick={() => setIsDiffMode(false)}
-                className="px-5 py-3 md:py-4 text-sm md:text-base font-bold transition-all flex items-center gap-2 bg-zinc-800 text-zinc-300 border border-zinc-700 rounded-2xl hover:bg-zinc-700 active:scale-95"
-              >
-                ← ✍️ 戻る
-              </button>
-              
-              <div className="flex-1 text-center text-sm font-bold px-4 hidden md:block text-emerald-400">
-                差分を確認して、問題なければ確定してください。
-              </div>
-
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                className={`px-6 py-3 md:py-4 min-w-[200px] text-base md:text-lg font-extrabold transition-all flex items-center justify-center gap-2 rounded-2xl shadow-none hover:shadow-[0_4px_20px_rgba(16,185,129,0.2)] active:scale-95 ${
-                  isSaving ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700' : 'bg-emerald-600/90 hover:bg-emerald-500 text-white border border-emerald-500'
+    <div className="pb-32">
+      {/* 🌟 全体カード（画像の外側のグレー背景） */}
+      <div className="bg-[#1c1c1e] rounded-[24px] p-6 md:p-8 shadow-xl border border-zinc-800/50">
+        
+        {/* ヘッダー・アクション */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl md:text-2xl font-bold text-white flex items-center gap-3">
+              <span className="text-zinc-300">📄</span> ES設問・回答エディタ
+            </h2>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setIsDiffMode(!isDiffMode)}
+                className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors border ${
+                  isDiffMode 
+                    ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' 
+                    : 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:bg-zinc-800'
                 }`}
               >
-                {isSaving ? '保存中...' : '✅ 確定して保存'}
+                {isDiffMode ? '👀 差分モードON' : '差分を確認'}
               </button>
-            </>
-          ) : (
-            // ✍️ 編集モード中
-            <>
-              <p className="text-sm font-bold px-4 hidden md:block flex-1 text-center text-zinc-400">
-                推敲が終わったら、変更差分を確認しましょう。
-              </p>
-              
-              <button
-                onClick={() => setIsDiffMode(true)}
-                className="w-full md:w-auto px-8 py-4 min-h-[56px] text-lg md:text-xl font-extrabold transition-all flex items-center justify-center gap-3 rounded-2xl active:scale-95 bg-indigo-600 hover:bg-indigo-500 text-white mx-auto md:ml-auto md:mr-0 shadow-none border border-indigo-500 hover:shadow-[0_8px_30px_rgb(79,70,229,0.2)]"
-              >
-                <span>💾</span> 確認モードへ進む
-              </button>
-            </>
-          )}
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={handleAddQuestion}
+              className="bg-[#2c2c2e] hover:bg-[#3c3c3e] text-zinc-300 font-bold px-4 py-2.5 rounded-xl transition-colors text-sm border border-zinc-700 whitespace-nowrap"
+            >
+              ＋ 設問追加
+            </button>
+            <button 
+              onClick={handleSave}
+              disabled={isSaving}
+              className={`font-bold px-6 py-2.5 rounded-xl transition-all text-sm shadow-lg flex items-center gap-2 whitespace-nowrap ${
+                isSaving 
+                  ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700' 
+                  : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white hover:shadow-indigo-500/25 border border-indigo-500'
+              }`}
+            >
+              <span>💾</span> {isSaving ? '保存中...' : '保存する'}
+            </button>
+          </div>
         </div>
+
+        {questions.length === 0 ? (
+          <div className="text-center py-20 text-zinc-400 bg-[#121212] rounded-2xl border border-zinc-800/30">
+            <p className="mb-5 text-lg font-bold">まだ設問が登録されていません。</p>
+            <p className="text-sm">右上の「＋ 設問追加」から登録してください。</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {questions.map((q, index) => {
+              const originalText = initialQuestions.find(orig => orig.id === q.id)?.content || ''
+              const currentText = q.content || ''
+              
+              const changes = diffChars(originalText, currentText)
+              const currentLength = currentText.length
+              const isOverLimit = q.maxLength ? currentLength > q.maxLength : false
+
+              return (
+                <div key={q.id} className="bg-[#121212] rounded-2xl p-6 border border-zinc-800/30 relative group">
+                  <button 
+                    onClick={() => handleDeleteQuestion(q.id)}
+                    className="absolute top-4 right-4 text-zinc-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="削除"
+                  >
+                    ✖
+                  </button>
+                  
+                  {/* 設問エリア */}
+                  <div className="mb-5">
+                    <label className="block text-xs font-bold text-zinc-400 mb-2">Q{index + 1}. 設問</label>
+                    <div className="w-full bg-[#1f1f1f] text-zinc-200 p-3.5 rounded-xl font-medium border border-transparent">
+                      {q.title}
+                    </div>
+                  </div>
+
+                  {/* 回答エリア */}
+                  <div className="mb-4 relative">
+                    <div className="flex justify-between items-end mb-2">
+                      <label className="block text-xs font-bold text-zinc-400">回答内容</label>
+                      {/* AIレビュー結果の表示（あれば） */}
+                      {q.reviewContent && (
+                        <div className="bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs px-3 py-1.5 rounded-lg flex items-center gap-2 max-w-md">
+                          <span className="text-indigo-400">🤖</span> 
+                          <span className="truncate">{q.reviewContent}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {isDiffMode ? (
+                      <div className="w-full bg-[#1f1f1f] text-zinc-200 p-4 rounded-xl min-h-[140px] border border-transparent font-mono whitespace-pre-wrap leading-relaxed break-words">
+                        {changes.map((part, i) => (
+                          <span key={i} className={
+                            part.added ? 'bg-emerald-500/20 text-emerald-300 rounded px-1' :
+                            part.removed ? 'bg-rose-500/20 text-rose-300 line-through rounded px-1 opacity-60' : ''
+                          }>
+                            {part.value}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <textarea
+                        value={currentText}
+                        onChange={(e) => handleChange(q.id, e.target.value)}
+                        placeholder="回答を入力してください..."
+                        className={`w-full bg-[#1f1f1f] text-zinc-200 p-4 rounded-xl min-h-[140px] resize-y border focus:outline-none transition-colors leading-relaxed ${
+                          isOverLimit ? 'border-rose-900/50 focus:border-rose-500/50' : 'border-transparent focus:border-indigo-500/50'
+                        }`}
+                      />
+                    )}
+                  </div>
+
+                  {/* フッター（文字数・上限設定） */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-zinc-500">文字数上限:</span>
+                      <div className="w-16 bg-[#1f1f1f] text-zinc-300 text-xs font-bold p-1.5 rounded-md text-center border border-transparent opacity-70 cursor-not-allowed">
+                        {q.maxLength || 'なし'}
+                      </div>
+                    </div>
+                    <div className={`text-xs font-bold ${isOverLimit ? 'text-rose-500' : 'text-zinc-500'}`}>
+                      {currentLength} 文字 / {q.maxLength ? q.maxLength : '無制限'}
+                    </div>
+                  </div>
+
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )

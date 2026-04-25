@@ -20,16 +20,16 @@ export default async function EditEpisodePage({ params }: Props) {
 
   return (
     <main className="min-h-screen p-4 md:p-8 pt-6 md:pt-10 max-w-6xl mx-auto">
-      <div className="mb-8">
-        <Link href="/episodes" className="text-sm font-bold text-zinc-500 hover:text-zinc-300 transition-colors mb-4 inline-block">
-          &larr; エピソード一覧に戻る
-        </Link>
-        <h1 className="text-3xl font-extrabold text-white flex items-center gap-3">
-          <span className="text-indigo-500">✏️</span> エピソード編集
-        </h1>
-        <p className="text-zinc-400 mt-2 text-sm">
-          ブラッシュアップして、より完成度の高いマスターエピソードに育てましょう。
-        </p>
+      {/* ヘッダー部分 */}
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 bg-zinc-900/50 rounded-xl shadow border border-zinc-800 gap-4">
+        <div className="flex items-center gap-3">
+          <Link href="/episodes" className="text-zinc-400 hover:text-zinc-200 transition bg-zinc-800 px-3 py-1.5 md:px-4 md:py-2 border border-zinc-700 rounded-lg shadow-sm text-[10px] md:text-sm font-medium whitespace-nowrap">
+            ← 戻る
+          </Link>
+          <h1 className="text-xl md:text-2xl font-bold text-zinc-100 truncate">
+            マスターエピソード <span className="text-zinc-500 font-normal ml-1">/ 編集</span>
+          </h1>
+        </div>
       </div>
 
       <EpisodeEditorClient initialEpisode={{

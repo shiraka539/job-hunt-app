@@ -1,6 +1,8 @@
-import { prisma } from '../../../../lib/prisma'
+import { prisma } from '@/lib/prisma'
 import { auth } from '@clerk/nextjs/server'
-import TacticalBoardClient from './TacticalBoardClient'
+import Link from 'next/link'
+import InterviewJsonEditorClient from '@/components/InterviewJsonEditorClient'
+import { InterviewQuestionJson } from '@/types'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -10,53 +12,37 @@ export default async function InterviewBoardPage({ params }: Props) {
   const { id } = await params
   const { userId } = await auth()
 
-  if (!userId) return <div>ログインしてください</div>
+  if (!userId) return <div className="p-8">ログインしてください</div>
 
-  // 1. 企業情報＆紐づいているマスターエピソードを取得
-  const company = await prisma.company.findFirst({
-    where: { id: id, userId: userId },
-    include: {
-      tacticalEpisodes: {
-        orderBy: { order: 'asc' },
-        include: {
-          masterEpisode: true
-        }
-      }
-    }
+  const company = await prisma.company.findUnique({
+    where: { id: id }
   })
 
-  if (!company) return <div>企業が見つからないか、アクセス権限がありません</div>
+  if (!company || company.userId !== userId) return <div className="p-8">企業が見つからないか、アクセス権限がありません</div>
 
-  // 2. ピッカー用に自分の全・マスターエピソードのリストを取得（軽い情報だけ）
-  const allMasterEpisodes = await prisma.masterEpisode.findMany({
-    where: { userId: userId },
-    select: { id: true, title: true, category: true },
-    orderBy: { updatedAt: 'desc' }
-  })
-
-  // 3. 質問アーカイブから、この企業に関係する質問、または頻出質問を取得
-  const relevantQuestions = await prisma.interviewQuestion.findMany({
-    where: {
-      userId: userId,
-      OR: [
-        { companyName: company.name }, // 今回は社名の完全一致で抽出
-        { isFrequent: true }
-      ]
-    },
-    orderBy: [
-      { isFrequent: 'desc' }, // 頻出を上に
-      { createdAt: 'desc' }
-    ]
-  })
+  // JSONデータのロード
+  const initialQuestions = (company.interviewQuestions as unknown as InterviewQuestionJson[]) || []
 
   return (
-    <main className="min-h-screen bg-black w-full overflow-x-hidden text-zinc-100">
-      <TacticalBoardClient
-        company={company}
-        tacticalEpisodes={company.tacticalEpisodes}
-        allMasterEpisodes={allMasterEpisodes}
-        questions={relevantQuestions}
-      />
+    <main className="min-h-screen bg-black p-4 md:p-8">
+      <div className="max-w-5xl mx-auto">
+        
+        {/* ヘッダー部分 */}
+        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 bg-zinc-900/50 rounded-xl shadow border border-zinc-800 gap-4">
+          <div className="flex items-center gap-3">
+            <Link href="/" className="text-zinc-400 hover:text-zinc-200 transition bg-zinc-800 px-3 py-1.5 md:px-4 md:py-2 border border-zinc-700 rounded-lg shadow-sm text-[10px] md:text-sm font-medium whitespace-nowrap">
+              ← 戻る
+            </Link>
+            <h1 className="text-xl md:text-2xl font-bold text-zinc-100 truncate">
+              {company.name} <span className="text-zinc-500 font-normal ml-1">/ 面接対策ボード</span>
+            </h1>
+          </div>
+        </div>
+
+        {/* 閲覧・編集エリア */}
+        <InterviewJsonEditorClient companyId={id} initialQuestions={initialQuestions} />
+
+      </div>
     </main>
   )
 }
