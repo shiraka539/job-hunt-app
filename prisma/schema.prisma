@@ -22,6 +22,9 @@ model Company {
 
   // リレーション：1つの企業は複数の選考フェーズ（Section）を持つ
   sections  Section[]
+  
+  // 実戦用ボード（企業ごとに紐付けたマスターエピソード）
+  tacticalEpisodes CompanyMasterEpisode[]
 }
 
 // 選考フェーズ（適性検査、ES、1次面接など）
@@ -97,8 +100,28 @@ model MasterEpisode {
   updatedAt         DateTime @updatedAt
 
   interviewQuestions InterviewQuestion[]
+  companyMasterEpisodes CompanyMasterEpisode[]
 
   @@index([userId]) // ユーザーごとの検索を高速化
+}
+
+// 面接対策「実戦用ボード」用の中間テーブル
+model CompanyMasterEpisode {
+  id              String   @id @default(cuid())
+  companyId       String
+  masterEpisodeId String
+  customMemo      String?  @db.Text // その企業向けの話し方の微調整用メモ
+  order           Int      @default(0) // 表示順
+
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  masterEpisode   MasterEpisode @relation(fields: [masterEpisodeId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([companyId, masterEpisodeId])
+  @@index([companyId])
+  @@index([masterEpisodeId])
 }
 
 // 面接で実際に聞かれた質問（アーカイブ）
